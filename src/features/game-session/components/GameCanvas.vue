@@ -1,8 +1,36 @@
-<script setup lang="ts"></script>
+<script lang="ts" setup>
+import { onMounted, onUnmounted, useTemplateRef } from 'vue'
+
+import { CanvasRenderer } from '@/game/rendering/CanvasRenderer'
+import { useGameSessionContext } from '@/features/game-session/composables/useGameSessionContext'
+
+const gameSession = useGameSessionContext()
+const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
+
+let renderer: CanvasRenderer | null = null
+
+onMounted(() => {
+  if (!canvas.value) {
+    throw new Error('Game canvas element is not mounted')
+  }
+
+  renderer = new CanvasRenderer(canvas.value)
+  gameSession.attachRenderer(renderer)
+})
+
+onUnmounted(() => {
+  if (!renderer) {
+    return
+  }
+
+  gameSession.detachRenderer(renderer)
+  renderer = null
+})
+</script>
 
 <template>
   <div class="game-canvas-container">
-    <canvas class="game-canvas" width="960" height="540" aria-label="Карта города" />
+    <canvas ref="canvas" aria-label="Карта города" class="game-canvas" height="540" width="960" />
   </div>
 </template>
 

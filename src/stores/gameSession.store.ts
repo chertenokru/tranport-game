@@ -40,6 +40,8 @@ export const useGameSessionStore = defineStore('GameSession', () => {
     money.value = snapshot.money
     deliveredPassengers.value = snapshot.deliveredPassengers
     accidents.value = snapshot.accidents
+    activeBuses.value = snapshot.activeBuses
+    activePedestrians.value = snapshot.activePedestrians
   }
 
   return {

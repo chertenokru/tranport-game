@@ -22,7 +22,7 @@ useGameLoop((deltaSeconds) => {
     return
   }
 
-  gameSessionStore.applySnapshot(gameSession.getSnapShot())
+  gameSessionStore.applySnapshot(gameSession.getSnapshot())
   snapshotElapsedSeconds = 0
 })
 

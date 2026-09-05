@@ -1,6 +1,7 @@
 export const GAME_CONFIG = {
   economy: {
     startingMoney: 300,
+    passengerDeliveredReward: 100,
   },
   simulation: {
     maxDeltaSeconds: 0.1,

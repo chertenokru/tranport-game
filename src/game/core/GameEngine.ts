@@ -3,7 +3,7 @@ import type { GameSystem } from './GameSystem'
 import { GameWorld } from './GameWorld'
 
 export class GameEngine {
-  readonly world: GameWorld
+  world: GameWorld
   readonly clock: GameClock
 
   private readonly systems: readonly GameSystem[]
@@ -37,6 +37,12 @@ export class GameEngine {
     for (const system of this.systems) {
       system.update(this.world, deltaSeconds)
     }
+  }
+
+  replaceWorld(world: GameWorld): void {
+    this.pause()
+    this.clock.reset()
+    this.world = world
   }
 
   reset(): void {

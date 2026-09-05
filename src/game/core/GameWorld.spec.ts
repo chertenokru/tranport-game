@@ -5,25 +5,29 @@ import { GAME_CONFIG } from '@/game/config/game.config'
 import { GameWorld } from './GameWorld'
 
 describe('GameWorld', () => {
-    it('starts with configured economy values', () => {
-        const world = new GameWorld()
+  it('starts with configured economy values', () => {
+    const world = new GameWorld()
 
-        expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
-        expect(world.deliveredPassengers).toBe(0)
-        expect(world.accidents).toBe(0)
-    })
+    expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
+    expect(world.deliveredPassengers).toBe(0)
+    expect(world.accidents).toBe(0)
+    expect(world.buildings.size).toBe(0)
+    expect(world.stops.size).toBe(0)
+    expect(world.routes.size).toBe(0)
+  })
 
-    it('resets runtime state', () => {
-        const world = new GameWorld()
+  it('resets runtime state', () => {
+    const world = new GameWorld()
 
-        world.money = 50
-        world.deliveredPassengers = 12
-        world.accidents = 3
+    world.money = 50
+    world.deliveredPassengers = 12
+    world.accidents = 3
 
-        world.reset()
+    world.reset()
 
-        expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
-        expect(world.deliveredPassengers).toBe(0)
-        expect(world.accidents).toBe(0)
-    })
+    expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
+    expect(world.deliveredPassengers).toBe(0)
+    expect(world.accidents).toBe(0)
+    expect(world.buses.size).toBe(0)
+  })
 })

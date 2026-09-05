@@ -1,16 +1,32 @@
 import { GameEngine } from '@/game/core/GameEngine'
+import type { GameRenderer } from '@/game/rendering/GameRenderer'
+import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { BusMovementSystem } from '@/game/systems/BusMovementSystem.ts'
+import { PedestrianMovementSystem } from '@/game/systems/PedestrianMovementSystem.ts'
+import { PassengerSystem } from '@/game/systems/PassengerSystem.ts'
+import { EconomySystem } from '@/game/systems/EconomySystem.ts'
 
 export interface GameSessionSnapshot {
   elapsedTimeSeconds: number
   money: number
   deliveredPassengers: number
   accidents: number
+  activeBuses: number
+  activePedestrians: number
 }
 
 export class GameSession {
   readonly engine: GameEngine
+  private renderer: GameRenderer | null = null
 
-  constructor(engine: GameEngine = new GameEngine()) {
+  constructor(
+    engine: GameEngine = new GameEngine(createVerticalSliceWorld(), [
+      new PedestrianMovementSystem(),
+      new BusMovementSystem(),
+      new PassengerSystem(),
+      new EconomySystem(),
+    ]),
+  ) {
     this.engine = engine
   }
 
@@ -27,25 +43,45 @@ export class GameSession {
   }
 
   restart(): void {
-    this.engine.reset()
+    this.engine.replaceWorld(createVerticalSliceWorld())
     this.engine.start()
+    this.render()
   }
 
   update(deltaSeconds: number): void {
     this.engine.update(deltaSeconds)
+    this.render()
   }
 
-  getSnapShot(): Readonly<GameSessionSnapshot> {
+  attachRenderer(renderer: GameRenderer): void {
+    this.renderer = renderer
+    this.render()
+  }
+
+  detachRenderer(renderer: GameRenderer): void {
+    if (this.renderer === renderer) {
+      this.renderer = null
+    }
+  }
+
+  getSnapshot(): Readonly<GameSessionSnapshot> {
     const { clock, world } = this.engine
     return {
       elapsedTimeSeconds: clock.elapsedTime,
       money: world.money,
       deliveredPassengers: world.deliveredPassengers,
       accidents: world.accidents,
+      activeBuses: world.buses.size,
+      activePedestrians: world.pedestrians.size,
     }
   }
 
   dispose(): void {
+    this.renderer = null
     this.engine.reset()
+  }
+
+  private render(): void {
+    this.renderer?.render(this.engine.world)
   }
 }
