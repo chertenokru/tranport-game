@@ -1,0 +1,29 @@
+import { describe, expect, it } from 'vitest'
+
+import { GAME_CONFIG } from '@/game/config/game.config'
+
+import { GameWorld } from './GameWorld'
+
+describe('GameWorld', () => {
+    it('starts with configured economy values', () => {
+        const world = new GameWorld()
+
+        expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
+        expect(world.deliveredPassengers).toBe(0)
+        expect(world.accidents).toBe(0)
+    })
+
+    it('resets runtime state', () => {
+        const world = new GameWorld()
+
+        world.money = 50
+        world.deliveredPassengers = 12
+        world.accidents = 3
+
+        world.reset()
+
+        expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
+        expect(world.deliveredPassengers).toBe(0)
+        expect(world.accidents).toBe(0)
+    })
+})
