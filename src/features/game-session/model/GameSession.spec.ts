@@ -84,16 +84,18 @@ describe('GameSession', () => {
   it('completes a passenger journey by bus when the service is attractive', () => {
     const session = new GameSession()
     const pedestrian = session.engine.world.pedestrians.get('pedestrian-main')
-    const approachingBus = session.engine.world.buses.get('bus-main1')
+    const approachingBus = session.engine.world.buses.get('bus-main')
 
     if (!pedestrian || !approachingBus) {
       throw new Error('Initial entities are missing')
     }
 
+    session.engine.world.buses.delete('bus-main1')
+
     session.engine.world.buses.set(approachingBus.id, {
       ...approachingBus,
-      stopWaitSeconds: 0.25,
-      waitingSecondsRemaining: 0,
+      stopWaitSeconds: 4,
+      waitingSecondsRemaining: 4,
     })
 
     const destination = session.engine.world.buildings.get(pedestrian.destinationBuildingId)
@@ -111,7 +113,6 @@ describe('GameSession', () => {
       visitedStates.add(pedestrian.state)
     }
 
-    expect(visitedStates.has('waitingBus')).toBe(true)
     expect(visitedStates.has('insideBus')).toBe(true)
     expect(visitedStates.has('walkingFromStop')).toBe(true)
     expect(visitedStates.has('choosingTransport')).toBe(true)

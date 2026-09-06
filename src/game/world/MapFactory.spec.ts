@@ -109,6 +109,7 @@ describe('createVerticalSliceWorld', () => {
       },
       state: 'choosingTransport',
       pathIndex: 0,
+      transportDecision: null,
     })
   })
 })

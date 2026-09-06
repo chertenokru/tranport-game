@@ -1,4 +1,4 @@
-export type TransportMode = 'walking' | 'bus'
+import type { TransportMode } from '@/game/domain/TransportDecision.ts'
 
 export interface TransportChoiceInput {
   readonly walkingDistance: number

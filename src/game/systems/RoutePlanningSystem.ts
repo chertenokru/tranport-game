@@ -7,6 +7,7 @@ import type { Vector2 } from '@/game/domain/geometry'
 import { chooseTransport } from './chooseTransport'
 import { findBestBusOption } from './findBestBusOption'
 import { getRouteLegDistances } from './getRouteLegDistances'
+import type { TransportDecisionReason } from '@/game/domain/TransportDecision.ts'
 
 export class RoutePlanningSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
@@ -28,12 +29,21 @@ export class RoutePlanningSystem implements GameSystem {
       return
     }
 
+    const walkingDistance = distanceBetween(pedestrian.position, destination.entrance)
+
+    const walkingTime = walkingDistance / pedestrian.walkingSpeed
+
     const route = world.routes.get(pedestrian.routeId)
     const boardingStop = world.stops.get(pedestrian.boardingStopId)
     const destinationStop = world.stops.get(pedestrian.destinationStopId)
 
     if (!route || !boardingStop || !destinationStop) {
-      this.startWalking(pedestrian, destination.entrance)
+      this.startWalkingWithoutTransit(
+        pedestrian,
+        destination.entrance,
+        walkingTime,
+        'transitUnavailable',
+      )
       return
     }
 
@@ -48,11 +58,14 @@ export class RoutePlanningSystem implements GameSystem {
       destinationStopIndex < 0 ||
       boardingStopIndex === destinationStopIndex
     ) {
-      this.startWalking(pedestrian, destination.entrance)
+      this.startWalkingWithoutTransit(
+        pedestrian,
+        destination.entrance,
+        walkingTime,
+        'transitUnavailable',
+      )
       return
     }
-
-    const walkingDistance = distanceBetween(pedestrian.position, destination.entrance)
 
     const walkingToStopDistance = distanceBetween(pedestrian.position, boardingStop.waitingPosition)
 
@@ -73,14 +86,24 @@ export class RoutePlanningSystem implements GameSystem {
     })
 
     if (!bestBusOption) {
-      this.startWalking(pedestrian, destination.entrance)
+      this.startWalkingWithoutTransit(
+        pedestrian,
+        destination.entrance,
+        walkingTime,
+        'noBusAvailable',
+      )
       return
     }
 
     const selectedBus = world.buses.get(bestBusOption.busId)
 
     if (!selectedBus) {
-      this.startWalking(pedestrian, destination.entrance)
+      this.startWalkingWithoutTransit(
+        pedestrian,
+        destination.entrance,
+        walkingTime,
+        'noBusAvailable',
+      )
       return
     }
 
@@ -93,6 +116,14 @@ export class RoutePlanningSystem implements GameSystem {
       walkingFromStopDistance,
       busTimeAdvantageFactor: PEDESTRIANS_CONFIG.default.busTimeAdvantageFactor,
     })
+
+    pedestrian.transportDecision = {
+      selectedMode: choice.mode,
+      reason: choice.mode === 'bus' ? 'busSelected' : 'busNotCompetitive',
+      walkingTime: choice.walkingTime,
+      busTime: choice.busTime,
+      evaluatedBusId: selectedBus.id,
+    }
 
     console.table([
       {
@@ -130,6 +161,23 @@ export class RoutePlanningSystem implements GameSystem {
     }
 
     this.startWalking(pedestrian, destination.entrance)
+  }
+
+  private startWalkingWithoutTransit(
+    pedestrian: Pedestrian,
+    destination: Vector2,
+    walkingTime: number,
+    reason: TransportDecisionReason,
+  ): void {
+    pedestrian.transportDecision = {
+      selectedMode: 'walking',
+      reason,
+      walkingTime,
+      busTime: null,
+      evaluatedBusId: null,
+    }
+
+    this.startWalking(pedestrian, destination)
   }
 
   private startWalking(pedestrian: Pedestrian, destination: Vector2): void {

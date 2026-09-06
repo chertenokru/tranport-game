@@ -1,5 +1,6 @@
 import type { Vector2 } from './geometry'
 import type { BuildingId, BusStopId, PedestrianId, RouteId } from './ids'
+import type { TransportDecision } from '@/game/domain/TransportDecision.ts'
 
 export type PedestrianState =
   | 'choosingTransport'
@@ -23,6 +24,7 @@ export interface Pedestrian {
   readonly boardingStopId: BusStopId
   readonly destinationStopId: BusStopId
 
+  transportDecision: TransportDecision | null
   position: Vector2
   state: PedestrianState
   path: readonly Vector2[]

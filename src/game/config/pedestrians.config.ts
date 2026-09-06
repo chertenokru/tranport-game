@@ -8,6 +8,6 @@ export const PEDESTRIANS_CONFIG = {
   default: {
     walkingSpeed: 40,
     radius: 6,
-    busTimeAdvantageFactor: 0.9,
+    busTimeAdvantageFactor: 1.0,
   },
 } as const satisfies Record<string, PedestrianTypeConfig>
