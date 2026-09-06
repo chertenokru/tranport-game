@@ -2,17 +2,18 @@ import type { Vector2 } from './geometry'
 import type { BuildingId, BusStopId, ResidentId, RouteId } from './ids'
 import type { TransportDecision } from './TransportDecision'
 
-export type ResidentState =
-  | 'idleInBuilding'
-  | 'choosingTransport'
-  | 'walking'
-  | 'walkingToStop'
-  | 'waitingBus'
-  | 'insideBus'
-  | 'walkingFromStop'
-  | 'crossingRoad'
-  | 'arrived'
-  | 'dead'
+export enum ResidentState {
+  IdleInBuilding = 'idleInBuilding',
+  ChoosingTransport = 'choosingTransport',
+  Walking = 'walking',
+  WalkingToStop = 'walkingToStop',
+  WaitingBus = 'waitingBus',
+  InsideBus = 'insideBus',
+  WalkingFromStop = 'walkingFromStop',
+  CrossingRoad = 'crossingRoad',
+  Arrived = 'arrived',
+  Dead = 'dead',
+}
 
 export interface TransitJourney {
   readonly routeId: RouteId

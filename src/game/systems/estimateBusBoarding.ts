@@ -1,4 +1,4 @@
-import type { Bus } from '@/game/domain/Bus'
+import { BusState, type Bus } from '@/game/domain/Bus'
 
 import { calculateRemainingPathDistance } from './movement/calculateRemainingPathDistance'
 import { getRouteDepartureDirection } from '@/game/systems/movement/getRouteDepartureDirection.ts'
@@ -77,7 +77,7 @@ export function estimateBusBoarding(input: BusBoardingInput): BusBoardingEstimat
     }
   }
 
-  if (bus.state === 'waitingAtStop') {
+  if (bus.state === BusState.WaitingAtStop) {
     const boardingEstimate = getBoardingEstimateAtStop(0, bus.waitingSecondsRemaining)
 
     if (boardingEstimate) {

@@ -7,6 +7,7 @@ import { GameWorld } from '@/game/core/GameWorld'
 
 import { GameSession } from './GameSession'
 import type { GameRenderer } from '@/game/rendering/GameRenderer.ts'
+import { ResidentState } from '@/game/domain/Resident'
 
 describe('GameSession', () => {
   afterEach(() => vi.restoreAllMocks())
@@ -17,11 +18,15 @@ describe('GameSession', () => {
     world.residents.set('idle', {
       ...first,
       id: 'idle',
-      state: 'idleInBuilding',
+      state: ResidentState.IdleInBuilding,
       currentBuildingId: 'building-house',
       journey: null,
     })
-    world.residents.set('passenger', { ...first, id: 'passenger', state: 'insideBus' })
+    world.residents.set('passenger', {
+      ...first,
+      id: 'passenger',
+      state: ResidentState.InsideBus,
+    })
     const session = new GameSession(new GameEngine(world))
     expect(session.getSnapshot()).toMatchObject({ totalResidents: 3, idleResidents: 1 })
   })
@@ -136,17 +141,17 @@ describe('GameSession', () => {
 
     session.start()
 
-    for (let step = 0; step < 600 && resident.state !== 'idleInBuilding'; step += 1) {
+    for (let step = 0; step < 600 && resident.state !== ResidentState.IdleInBuilding; step += 1) {
       session.update(0.1)
       visitedStates.add(resident.state)
     }
 
-    expect(visitedStates.has('insideBus')).toBe(true)
-    expect(visitedStates.has('walkingFromStop')).toBe(true)
-    expect(visitedStates.has('choosingTransport')).toBe(true)
-    expect(visitedStates.has('walkingToStop')).toBe(true)
+    expect(visitedStates.has(ResidentState.InsideBus)).toBe(true)
+    expect(visitedStates.has(ResidentState.WalkingFromStop)).toBe(true)
+    expect(visitedStates.has(ResidentState.ChoosingTransport)).toBe(true)
+    expect(visitedStates.has(ResidentState.WalkingToStop)).toBe(true)
 
-    expect(resident.state).toBe('idleInBuilding')
+    expect(resident.state).toBe(ResidentState.IdleInBuilding)
     expect(resident.position).toEqual(destination.entrance)
     expect(session.engine.world.residents.has(resident.id)).toBe(true)
 

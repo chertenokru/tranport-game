@@ -8,6 +8,7 @@ import { EconomySystem } from '@/game/systems/EconomySystem.ts'
 import { RoutePlanningSystem } from '@/game/systems/RoutePlanningSystem.ts'
 import { PopulationSystem } from '@/game/systems/PopulationSystem'
 import { ResidentArrivalSystem } from '@/game/systems/ResidentArrivalSystem'
+import { ResidentState } from '@/game/domain/Resident'
 
 export interface GameSessionSnapshot {
   elapsedTimeSeconds: number
@@ -81,7 +82,7 @@ export class GameSession {
       activeBuses: world.buses.size,
       totalResidents: world.residents.size,
       idleResidents: [...world.residents.values()].filter(
-        (resident) => resident.state === 'idleInBuilding',
+        (resident) => resident.state === ResidentState.IdleInBuilding,
       ).length,
     }
   }

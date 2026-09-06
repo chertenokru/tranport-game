@@ -1,14 +1,14 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import type { Resident, ResidentState } from '@/game/domain/Resident'
+import { ResidentState, type Resident } from '@/game/domain/Resident'
 
 import { moveAlongPath } from './movement/moveAlongPath'
 
 const MOVING_STATES: ReadonlySet<ResidentState> = new Set([
-  'walking',
-  'walkingToStop',
-  'walkingFromStop',
-  'crossingRoad',
+  ResidentState.Walking,
+  ResidentState.WalkingToStop,
+  ResidentState.WalkingFromStop,
+  ResidentState.CrossingRoad,
 ])
 
 export class PedestrianMovementSystem implements GameSystem {
@@ -43,17 +43,17 @@ export class PedestrianMovementSystem implements GameSystem {
     resident.pathIndex = 0
 
     switch (resident.state) {
-      case 'walkingToStop':
-        resident.state = 'waitingBus'
+      case ResidentState.WalkingToStop:
+        resident.state = ResidentState.WaitingBus
         break
 
-      case 'walking':
-      case 'walkingFromStop':
-        resident.state = 'arrived'
+      case ResidentState.Walking:
+      case ResidentState.WalkingFromStop:
+        resident.state = ResidentState.Arrived
         break
 
-      case 'crossingRoad':
-        resident.state = 'walking'
+      case ResidentState.CrossingRoad:
+        resident.state = ResidentState.Walking
         break
     }
   }

@@ -1,7 +1,10 @@
 import type { Vector2 } from './geometry'
 import type { BuildingId } from './ids'
 
-export type BuildingType = 'residential' | 'office'
+export enum BuildingType {
+  Residential = 'residential',
+  Office = 'office',
+}
 
 export interface Building {
   readonly id: BuildingId

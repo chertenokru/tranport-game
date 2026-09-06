@@ -1,9 +1,14 @@
 import type { GameWorld } from '@/game/core/GameWorld'
 
 import type { GameRenderer } from './GameRenderer'
-import type { TransportDecision } from '@/game/domain/TransportDecision.ts'
+import {
+  TransportDecisionReason,
+  TransportMode,
+  type TransportDecision,
+} from '@/game/domain/TransportDecision.ts'
 import type { ResidentId } from '@/game/domain/ids.ts'
-import type { Resident } from '@/game/domain/Resident.ts'
+import { ResidentState, type Resident } from '@/game/domain/Resident.ts'
+import { BuildingType } from '@/game/domain/Building'
 
 const DECISION_INDICATOR_DURATION_MS = 4_000
 
@@ -106,7 +111,7 @@ export class CanvasRenderer implements GameRenderer {
     context.save()
     const residents = [...world.residents.values()]
     for (const building of world.buildings.values()) {
-      context.fillStyle = building.type === 'residential' ? '#f59e0b' : '#64748b'
+      context.fillStyle = building.type === BuildingType.Residential ? '#f59e0b' : '#64748b'
 
       context.fillRect(building.position.x, building.position.y, building.size.x, building.size.y)
 
@@ -121,13 +126,13 @@ export class CanvasRenderer implements GameRenderer {
         building.position.y + building.size.y / 2,
       )
       const residentsCount = residents.filter(
-        (r) => r.currentBuildingId === building.id && r.state === 'idleInBuilding',
+        (r) => r.currentBuildingId === building.id && r.state === ResidentState.IdleInBuilding,
       ).length
       context.textAlign = 'left'
       context.textBaseline = 'middle'
       context.font = 'bold 11px sans-serif'
 
-      context.fillStyle = building.type === 'residential' ? '#0f172a' : '#f8fafc'
+      context.fillStyle = building.type === BuildingType.Residential ? '#0f172a' : '#f8fafc'
       context.fillText(`×${residentsCount}`, building.position.x + 10, building.position.y + 15)
     }
 
@@ -214,9 +219,9 @@ export class CanvasRenderer implements GameRenderer {
     const groups: Resident[][] = []
     for (const resident of world.residents.values()) {
       if (
-        resident.state === 'insideBus' ||
-        resident.state === 'idleInBuilding' ||
-        resident.state === 'dead'
+        resident.state === ResidentState.InsideBus ||
+        resident.state === ResidentState.IdleInBuilding ||
+        resident.state === ResidentState.Dead
       ) {
         continue
       }
@@ -281,10 +286,10 @@ export class CanvasRenderer implements GameRenderer {
     const walkingLabel = `${decision.walkingTime.toFixed(1)}`
     const busLabel = decision.busTime === null ? '—' : `${decision.busTime.toFixed(1)}`
 
-    const selectedIcon = decision.selectedMode === 'bus' ? '🚌' : '🚶'
-    const otherIcon = decision.selectedMode === 'bus' ? '🚶' : '🚌'
-    const selectedTime = decision.selectedMode === 'bus' ? busLabel : walkingLabel
-    const otherTime = decision.selectedMode === 'bus' ? walkingLabel : busLabel
+    const selectedIcon = decision.selectedMode === TransportMode.Bus ? '🚌' : '🚶'
+    const otherIcon = decision.selectedMode === TransportMode.Bus ? '🚶' : '🚌'
+    const selectedTime = decision.selectedMode === TransportMode.Bus ? busLabel : walkingLabel
+    const otherTime = decision.selectedMode === TransportMode.Bus ? walkingLabel : busLabel
 
     const label = `${selectedIcon} ${selectedTime} (${otherIcon} ${otherTime})`
 
@@ -305,9 +310,10 @@ export class CanvasRenderer implements GameRenderer {
     context.globalAlpha = Math.min(1, remainingTime / 500)
 
     context.strokeStyle =
-      decision.reason === 'noBusAvailable' || decision.reason === 'transitUnavailable'
+      decision.reason === TransportDecisionReason.NoBusAvailable ||
+      decision.reason === TransportDecisionReason.TransitUnavailable
         ? '#ef4444'
-        : decision.selectedMode === 'bus'
+        : decision.selectedMode === TransportMode.Bus
           ? '#2563eb'
           : '#f59e0b'
     context.lineWidth = 1

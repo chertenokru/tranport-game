@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
+import { ResidentState } from '@/game/domain/Resident'
 
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 
@@ -20,7 +21,7 @@ describe('PedestrianMovementSystem', () => {
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-    resident.state = 'walkingToStop'
+    resident.state = ResidentState.WalkingToStop
     resident.path = [resident.position, busStop.waitingPosition]
     resident.pathIndex = 1
     const startingPosition = {
@@ -46,7 +47,7 @@ describe('PedestrianMovementSystem', () => {
 
     expect(travelledDistance).toBeCloseTo(resident.walkingSpeed, 5)
     expect(remainingDistanceToStop).toBeLessThan(initialDistanceToStop)
-    expect(resident.state).toBe('walkingToStop')
+    expect(resident.state).toBe(ResidentState.WalkingToStop)
   })
 
   it('starts waiting after reaching the stop', () => {
@@ -63,13 +64,13 @@ describe('PedestrianMovementSystem', () => {
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-    resident.state = 'walkingToStop'
+    resident.state = ResidentState.WalkingToStop
     resident.path = [resident.position, busStop.waitingPosition]
     resident.pathIndex = 1
     system.update(world, 10)
 
     expect(resident.position).toEqual(busStop.waitingPosition)
-    expect(resident.state).toBe('waitingBus')
+    expect(resident.state).toBe(ResidentState.WaitingBus)
     expect(resident.path).toEqual([])
     expect(resident.pathIndex).toBe(0)
   })

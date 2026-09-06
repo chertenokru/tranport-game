@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia'
 
 import AppButton from '@/components/common/AppButton.vue'
-import { type BuildMode, useUiStore } from '@/stores/ui.store'
+import { BuildMode, useUiStore } from '@/stores/ui.store'
 
 const uiStore = useUiStore()
 const { activeBuildMode } = storeToRefs(uiStore)
@@ -14,17 +14,20 @@ function selectMode(mode: BuildMode) {
 
 <template>
   <footer class="build-toolbar">
-    <AppButton :aria-pressed="activeBuildMode === 'bus'" @click="selectMode('bus')">
+    <AppButton :aria-pressed="activeBuildMode === BuildMode.Bus" @click="selectMode(BuildMode.Bus)">
       Автобус
     </AppButton>
 
-    <AppButton :aria-pressed="activeBuildMode === 'crosswalk'" @click="selectMode('crosswalk')">
+    <AppButton
+      :aria-pressed="activeBuildMode === BuildMode.Crosswalk"
+      @click="selectMode(BuildMode.Crosswalk)"
+    >
       Переход
     </AppButton>
 
     <AppButton
-      :aria-pressed="activeBuildMode === 'trafficLight'"
-      @click="selectMode('trafficLight')"
+      :aria-pressed="activeBuildMode === BuildMode.TrafficLight"
+      @click="selectMode(BuildMode.TrafficLight)"
     >
       Светофор
     </AppButton>

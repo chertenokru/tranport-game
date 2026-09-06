@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
+import { ResidentState } from '@/game/domain/Resident'
+import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision'
 
 import { RoutePlanningSystem } from './RoutePlanningSystem'
 
@@ -19,7 +21,7 @@ describe('RoutePlanningSystem', () => {
     const bus = world.buses.get('bus-main1')!
     bus.waitingSecondsRemaining = 4
     new RoutePlanningSystem().update(world, 0)
-    expect(resident.state).toBe('walkingToStop')
+    expect(resident.state).toBe(ResidentState.WalkingToStop)
     expect(resident.journey.transit).toEqual({
       routeId: 'route-main',
       boardingStopId: 'stop-office',
@@ -33,10 +35,10 @@ describe('RoutePlanningSystem', () => {
     const resident = world.residents.get('resident-main')!
     world.routes.clear()
     new RoutePlanningSystem().update(world, 0)
-    expect(resident.state).toBe('walking')
+    expect(resident.state).toBe(ResidentState.Walking)
     expect(resident.path.at(-1)).toEqual(world.buildings.get('building-office')!.entrance)
     expect(resident.journey?.transit).toBeNull()
-    expect(resident.transportDecision?.reason).toBe('transitUnavailable')
+    expect(resident.transportDecision?.reason).toBe(TransportDecisionReason.TransitUnavailable)
   })
 
   it('chooses the bus when a suitable bus arrives soon enough', () => {
@@ -67,19 +69,19 @@ describe('RoutePlanningSystem', () => {
       waitingSecondsRemaining: 4,
     })
 
-    resident.state = 'choosingTransport'
+    resident.state = ResidentState.ChoosingTransport
     resident.path = []
     resident.pathIndex = 0
 
     system.update(world, 0)
 
-    expect(resident.state).toBe('walkingToStop')
+    expect(resident.state).toBe(ResidentState.WalkingToStop)
     expect(resident.path.at(-1)).toEqual(boardingStop.waitingPosition)
     expect(resident.pathIndex).toBe(1)
 
     expect(resident.transportDecision).toMatchObject({
-      selectedMode: 'bus',
-      reason: 'busSelected',
+      selectedMode: TransportMode.Bus,
+      reason: TransportDecisionReason.BusSelected,
       walkingTime: 17,
       evaluatedBusId: 'bus-main',
     })
@@ -114,18 +116,18 @@ describe('RoutePlanningSystem', () => {
       waitingSecondsRemaining: 1,
     })
 
-    resident.state = 'choosingTransport'
+    resident.state = ResidentState.ChoosingTransport
     resident.path = []
     resident.pathIndex = 0
 
     system.update(world, 0)
 
-    expect(resident.state).toBe('walking')
+    expect(resident.state).toBe(ResidentState.Walking)
     expect(resident.path.at(-1)).toEqual(destination.entrance)
     expect(resident.pathIndex).toBe(1)
     expect(resident.transportDecision).toMatchObject({
-      selectedMode: 'walking',
-      reason: 'busNotCompetitive',
+      selectedMode: TransportMode.Walking,
+      reason: TransportDecisionReason.BusNotCompetitive,
       walkingTime: 17,
       evaluatedBusId: 'bus-main',
     })
@@ -152,10 +154,10 @@ describe('RoutePlanningSystem', () => {
 
     system.update(world, 0)
 
-    expect(resident.state).toBe('walking')
+    expect(resident.state).toBe(ResidentState.Walking)
     expect(resident.transportDecision).toEqual({
-      selectedMode: 'walking',
-      reason: 'noBusAvailable',
+      selectedMode: TransportMode.Walking,
+      reason: TransportDecisionReason.NoBusAvailable,
       walkingTime: 17,
       busTime: null,
       evaluatedBusId: null,

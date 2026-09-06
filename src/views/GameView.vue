@@ -5,7 +5,7 @@ import BuildToolbar from '@/features/infrastructure-building/components/BuildToo
 import { markRaw, onUnmounted, watch } from 'vue'
 import { GameSession } from '@/features/game-session/model/GameSession.ts'
 import { provideGameSession } from '@/features/game-session/composables/useGameSessionContext.ts'
-import { useGameSessionStore } from '@/stores/gameSession.store.ts'
+import { GameStatus, useGameSessionStore } from '@/stores/gameSession.store.ts'
 import { useGameLoop } from '@/features/game-session/composables/useGameLoop.ts'
 import { GAME_CONFIG } from '@/game/config/game.config.ts'
 
@@ -29,7 +29,7 @@ useGameLoop((deltaSeconds) => {
 watch(
   () => gameSessionStore.status,
   (status) => {
-    if (status === 'running') {
+    if (status === GameStatus.Running) {
       gameSession.resume()
       return
     }

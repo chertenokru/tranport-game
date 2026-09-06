@@ -1,4 +1,4 @@
-import type { TransportMode } from '@/game/domain/TransportDecision.ts'
+import { TransportMode } from '@/game/domain/TransportDecision.ts'
 
 export interface TransportChoiceInput {
   readonly walkingDistance: number
@@ -29,7 +29,8 @@ export function chooseTransport(input: TransportChoiceInput): TransportChoiceRes
     input.busTravelTime +
     input.walkingFromStopDistance / input.walkingSpeed
 
-  const mode = busTime < walkingTime * input.busTimeAdvantageFactor ? 'bus' : 'walking'
+  const mode =
+    busTime < walkingTime * input.busTimeAdvantageFactor ? TransportMode.Bus : TransportMode.Walking
 
   return {
     mode,

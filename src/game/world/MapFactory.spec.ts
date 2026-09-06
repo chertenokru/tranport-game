@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { createVerticalSliceWorld } from './MapFactory'
+import { BuildingType } from '@/game/domain/Building'
+import { BusState } from '@/game/domain/Bus'
 
 describe('createVerticalSliceWorld', () => {
   it('creates the initial buildings', () => {
@@ -10,12 +12,12 @@ describe('createVerticalSliceWorld', () => {
 
     expect(world.buildings.get('building-house')).toMatchObject({
       name: 'Жилой дом',
-      type: 'residential',
+      type: BuildingType.Residential,
     })
 
     expect(world.buildings.get('building-office')).toMatchObject({
       name: 'Офис',
-      type: 'office',
+      type: BuildingType.Office,
     })
   })
 
@@ -85,7 +87,7 @@ describe('createVerticalSliceWorld', () => {
         x: 260,
         y: 340,
       },
-      state: 'waitingAtStop',
+      state: BusState.WaitingAtStop,
       currentStopIndex: 0,
       direction: 1,
       path: [],

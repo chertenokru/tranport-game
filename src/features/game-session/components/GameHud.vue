@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { type GameStatus, useGameSessionStore } from '@/stores/gameSession.store'
+import { GameStatus, useGameSessionStore } from '@/stores/gameSession.store'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import AppButton from '@/components/common/AppButton.vue'
@@ -9,15 +9,19 @@ const { status, money, activeBuses, totalResidents, idleResidents, accidents, el
   storeToRefs(gameSessionStore)
 
 const statusLabels: Record<GameStatus, string> = {
-  idle: 'Не запущена',
-  running: 'Игра идёт',
-  paused: 'Пауза',
-  finished: 'Игра закончена',
+  [GameStatus.Idle]: 'Не запущена',
+  [GameStatus.Running]: 'Игра идёт',
+  [GameStatus.Paused]: 'Пауза',
+  [GameStatus.Finished]: 'Игра закончена',
 }
 const statusLabel = computed(() => statusLabels[status.value])
-const canTogglePause = computed(() => status.value === 'running' || status.value === 'paused')
+const canTogglePause = computed(
+  () => status.value === GameStatus.Running || status.value === GameStatus.Paused,
+)
 const elapsedTimeLabel = computed(() => `${Math.floor(elapsedTimeSeconds.value)} с`)
-const pauseButtonLabel = computed(() => (status.value === 'paused' ? 'Продолжить' : 'Пауза'))
+const pauseButtonLabel = computed(() =>
+  status.value === GameStatus.Paused ? 'Продолжить' : 'Пауза',
+)
 </script>
 
 <template>

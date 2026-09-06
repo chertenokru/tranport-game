@@ -8,6 +8,9 @@ import { BusMovementSystem } from './BusMovementSystem'
 import { PassengerSystem } from './PassengerSystem'
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 import { RoutePlanningSystem } from './RoutePlanningSystem'
+import { BusState } from '@/game/domain/Bus'
+import { ResidentState } from '@/game/domain/Resident'
+import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision'
 
 function createWaitingGroup() {
   const world = createVerticalSliceWorld()
@@ -33,7 +36,7 @@ function createWaitingGroup() {
     }
     resident.position = { ...stop.waitingPosition }
     resident.currentBuildingId = null
-    resident.state = 'waitingBus'
+    resident.state = ResidentState.WaitingBus
     resident.journey = {
       originBuildingId: origin.id,
       destinationBuildingId: 'building-office',
@@ -58,7 +61,7 @@ describe('Replanning after a full bus', () => {
 
     expect(bus.passengerIds).toEqual(residents.slice(0, bus.capacity).map(({ id }) => id))
     expect(overflow.map(({ state }) => state)).toEqual(
-      Array.from({ length: 5 }, () => 'choosingTransport'),
+      Array.from({ length: 5 }, () => ResidentState.ChoosingTransport),
     )
   })
 
@@ -85,9 +88,9 @@ describe('Replanning after a full bus', () => {
 
     // Walking from this stop takes about 14 seconds. The only bus must finish
     // its round trip before boarding again, making that journey slower.
-    expect(bus.state).toBe('moving')
-    expect(resident.transportDecision?.selectedMode).toBe('walking')
-    expect(resident.state).toBe('walking')
+    expect(bus.state).toBe(BusState.Moving)
+    expect(resident.transportDecision?.selectedMode).toBe(TransportMode.Walking)
+    expect(resident.state).toBe(ResidentState.Walking)
     expect(resident.position.x).toBeGreaterThan(initialPosition.x)
     expect(bus.passengerIds).not.toContain(resident.id)
   })
@@ -96,18 +99,18 @@ describe('Replanning after a full bus', () => {
     const { world, bus, overflow } = createWaitingGroup()
     new PassengerSystem().update(world, 0)
     const resident = overflow[0]!
-    expect(resident.state).toBe('choosingTransport')
+    expect(resident.state).toBe(ResidentState.ChoosingTransport)
 
     // Control case: deliberately replan after departure, unlike the normal
     // GameSession order, where planning precedes BusMovementSystem.
     new BusMovementSystem().update(world, bus.waitingSecondsRemaining)
-    expect(bus.state).toBe('moving')
+    expect(bus.state).toBe(BusState.Moving)
     new RoutePlanningSystem().update(world, 0)
 
-    expect(resident.state).toBe('walking')
+    expect(resident.state).toBe(ResidentState.Walking)
     expect(resident.transportDecision).toMatchObject({
-      selectedMode: 'walking',
-      reason: 'busNotCompetitive',
+      selectedMode: TransportMode.Walking,
+      reason: TransportDecisionReason.BusNotCompetitive,
     })
     expect(resident.transportDecision!.busTime!).toBeGreaterThan(
       resident.transportDecision!.walkingTime,

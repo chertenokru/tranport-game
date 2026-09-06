@@ -2,6 +2,7 @@ import { POPULATION_CONFIG, type PopulationConfig } from '@/game/config/populati
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
 import { createResident } from '@/game/world/createResident'
+import { ResidentState } from '@/game/domain/Resident'
 
 export class PopulationSystem implements GameSystem {
   constructor(
@@ -61,7 +62,11 @@ export class PopulationSystem implements GameSystem {
 
   private assignDestinations(world: GameWorld): void {
     for (const resident of world.residents.values()) {
-      if (resident.state !== 'idleInBuilding' || resident.journey || !resident.currentBuildingId)
+      if (
+        resident.state !== ResidentState.IdleInBuilding ||
+        resident.journey ||
+        !resident.currentBuildingId
+      )
         continue
 
       // Until the pedestrian graph exists, every other building is reachable on foot.
@@ -80,7 +85,7 @@ export class PopulationSystem implements GameSystem {
       resident.transportDecision = null
       resident.path = []
       resident.pathIndex = 0
-      resident.state = 'choosingTransport'
+      resident.state = ResidentState.ChoosingTransport
     }
   }
 }

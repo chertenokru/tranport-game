@@ -1,6 +1,6 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import type { Bus } from '@/game/domain/Bus'
+import { BusState, type Bus } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
 import type { Vector2 } from '@/game/domain/geometry'
@@ -12,7 +12,7 @@ import { moveAlongPath } from '@/game/systems/movement/moveAlongPath.ts'
 export class BusMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     for (const bus of world.buses.values()) {
-      if (bus.state === 'waitingAtStop') {
+      if (bus.state === BusState.WaitingAtStop) {
         this.updateWaitingBus(world, bus, deltaSeconds)
         continue
       }
@@ -73,7 +73,7 @@ export class BusMovementSystem implements GameSystem {
 
     bus.path = positionPath
     bus.pathIndex = 1
-    bus.state = 'moving'
+    bus.state = BusState.Moving
   }
 
   private getNextStopIndex(bus: Bus, route: BusRoute): number | null {
@@ -135,7 +135,7 @@ export class BusMovementSystem implements GameSystem {
 
   private finishLeg(bus: Bus): void {
     bus.currentStopIndex += bus.direction
-    bus.state = 'waitingAtStop'
+    bus.state = BusState.WaitingAtStop
     bus.waitingSecondsRemaining = bus.stopWaitSeconds
     bus.path = []
     bus.pathIndex = 0

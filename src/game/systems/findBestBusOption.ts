@@ -1,4 +1,4 @@
-import type { Bus } from '@/game/domain/Bus'
+import { BusState, type Bus } from '@/game/domain/Bus'
 import type { BusId, RouteId } from '@/game/domain/ids'
 
 import { estimateBusBoarding } from './estimateBusBoarding.ts'
@@ -57,7 +57,7 @@ export function findBestBusOption(input: BestBusOptionInput): BusTravelOption | 
 
     if (
       bus.currentStopIndex === input.boardingStopIndex &&
-      bus.state === 'waitingAtStop' &&
+      bus.state === BusState.WaitingAtStop &&
       bus.passengerIds.length === bus.capacity
     ) {
       continue

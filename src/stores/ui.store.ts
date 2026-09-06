@@ -1,7 +1,11 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-export type BuildMode = 'bus' | 'crosswalk' | 'trafficLight'
+export enum BuildMode {
+  Bus = 'bus',
+  Crosswalk = 'crosswalk',
+  TrafficLight = 'trafficLight',
+}
 export type ActiveBuildMode = BuildMode | null
 
 export const useUiStore = defineStore('ui', () => {

@@ -1,15 +1,16 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import type { Bus } from '@/game/domain/Bus'
+import { BusState, type Bus } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
+import { ResidentState } from '@/game/domain/Resident'
 import { getRouteDepartureDirection } from '@/game/systems/movement/getRouteDepartureDirection.ts'
 
 export class PassengerSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     void deltaSeconds
     for (const bus of world.buses.values()) {
-      if (bus.state !== 'waitingAtStop') {
+      if (bus.state !== BusState.WaitingAtStop) {
         continue
       }
 
@@ -60,7 +61,7 @@ export class PassengerSystem implements GameSystem {
       }
       resident.path = [stop.waitingPosition, destination.entrance]
       resident.pathIndex = 1
-      resident.state = 'walkingFromStop'
+      resident.state = ResidentState.WalkingFromStop
     }
   }
 
@@ -79,7 +80,7 @@ export class PassengerSystem implements GameSystem {
     for (const resident of world.residents.values()) {
       const transit = resident.journey?.transit
       if (
-        resident.state !== 'waitingBus' ||
+        resident.state !== ResidentState.WaitingBus ||
         !transit ||
         transit.routeId !== route.id ||
         transit.boardingStopId !== currentStopId
@@ -97,11 +98,11 @@ export class PassengerSystem implements GameSystem {
       }
 
       if (bus.passengerIds.length >= bus.capacity) {
-        resident.state = 'choosingTransport'
+        resident.state = ResidentState.ChoosingTransport
         continue
       }
 
-      resident.state = 'insideBus'
+      resident.state = ResidentState.InsideBus
       resident.path = []
       resident.pathIndex = 0
 

@@ -1,5 +1,6 @@
 import { createVerticalSliceWorld } from '@/game/world/MapFactory'
 import { createResident } from '@/game/world/createResident'
+import { ResidentState } from '@/game/domain/Resident'
 
 export function createWorldWithResident() {
   const world = createVerticalSliceWorld()
@@ -14,7 +15,7 @@ export function createWorldWithResident() {
       destinationStopId: 'stop-office',
     },
   }
-  resident.state = 'choosingTransport'
+  resident.state = ResidentState.ChoosingTransport
   world.residents.set(resident.id, resident)
   return world
 }

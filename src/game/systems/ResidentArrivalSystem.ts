@@ -1,6 +1,7 @@
 import { POPULATION_CONFIG } from '@/game/config/population.config'
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
+import { ResidentState } from '@/game/domain/Resident'
 
 // Runs after EconomySystem has accounted for the completed journey.
 export class ResidentArrivalSystem implements GameSystem {
@@ -20,7 +21,7 @@ export class ResidentArrivalSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     void deltaSeconds
     for (const resident of world.residents.values()) {
-      if (resident.state !== 'idleInBuilding' || !resident.journey) continue
+      if (resident.state !== ResidentState.IdleInBuilding || !resident.journey) continue
 
       resident.currentBuildingId = resident.journey.destinationBuildingId
       resident.journey = null

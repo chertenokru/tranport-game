@@ -1,12 +1,16 @@
 import type { BusId } from './ids'
 
-export type TransportMode = 'walking' | 'bus'
+export enum TransportMode {
+  Walking = 'walking',
+  Bus = 'bus',
+}
 
-export type TransportDecisionReason =
-  | 'busSelected'
-  | 'busNotCompetitive'
-  | 'noBusAvailable'
-  | 'transitUnavailable'
+export enum TransportDecisionReason {
+  BusSelected = 'busSelected',
+  BusNotCompetitive = 'busNotCompetitive',
+  NoBusAvailable = 'noBusAvailable',
+  TransitUnavailable = 'transitUnavailable',
+}
 
 export interface TransportDecision {
   readonly selectedMode: TransportMode

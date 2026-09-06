@@ -9,6 +9,7 @@ import { ResidentArrivalSystem } from './ResidentArrivalSystem'
 import { RoutePlanningSystem } from './RoutePlanningSystem'
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 import { EconomySystem } from './EconomySystem'
+import { ResidentState } from '@/game/domain/Resident'
 
 function config(overrides: Partial<PopulationConfig> = {}): PopulationConfig {
   return { ...POPULATION_CONFIG, cycleIntervalSeconds: 10, groupProbability: 0, ...overrides }
@@ -24,7 +25,7 @@ describe('PopulationSystem', () => {
     const resident = world.residents.get('resident-1')!
     expect(resident).toMatchObject({
       currentBuildingId: null,
-      state: 'choosingTransport',
+      state: ResidentState.ChoosingTransport,
       journey: {
         originBuildingId: 'building-house',
         destinationBuildingId: 'building-office',
@@ -67,7 +68,7 @@ describe('PopulationSystem', () => {
     system.update(world, 20)
     expect(world.residents.size).toBe(2)
     for (const resident of world.residents.values()) {
-      expect(resident.state).toBe('idleInBuilding')
+      expect(resident.state).toBe(ResidentState.IdleInBuilding)
       expect(resident.currentBuildingId).toBe('building-house')
       expect(resident.journey).toBeNull()
     }
@@ -132,7 +133,7 @@ describe('PopulationSystem', () => {
   it('creates an inactive resident without a preassigned journey', () => {
     const world = createVerticalSliceWorld()
     const resident = createResident('test', world.buildings.get('building-house')!)
-    expect(resident.state).toBe('idleInBuilding')
+    expect(resident.state).toBe(ResidentState.IdleInBuilding)
     expect(resident.currentBuildingId).toBe('building-house')
     expect(resident.journey).toBeNull()
     expect(resident.transportDecision).toBeNull()
@@ -160,14 +161,14 @@ describe('Resident lifecycle', () => {
     const world = engine.world
     const resident = world.residents.get('resident-1')!
     for (let step = 0; step < 180; step++) engine.update(0.1)
-    expect(resident.state).toBe('idleInBuilding')
+    expect(resident.state).toBe(ResidentState.IdleInBuilding)
     expect(resident.currentBuildingId).toBe('building-office')
     expect(resident.position).toEqual(world.buildings.get('building-office')!.entrance)
     expect(resident.journey).toBeNull()
     expect(resident.transportDecision).toBeNull()
     expect(world.deliveredPassengers).toBe(1)
     for (let step = 0; step < 110; step++) engine.update(0.1)
-    expect(resident.state).toBe('idleInBuilding')
+    expect(resident.state).toBe(ResidentState.IdleInBuilding)
     expect(world.deliveredPassengers).toBe(1)
     for (let step = 0; step < 20; step++) engine.update(0.1)
     expect(world.residents.get(resident.id)).toBe(resident)

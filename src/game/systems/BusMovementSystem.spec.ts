@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { BusState } from '@/game/domain/Bus'
 
 import { BusMovementSystem } from './BusMovementSystem'
 
@@ -18,12 +19,12 @@ describe('BusMovementSystem', () => {
 
     system.update(world, 0.5)
 
-    expect(bus.state).toBe('waitingAtStop')
+    expect(bus.state).toBe(BusState.WaitingAtStop)
     expect(bus.waitingSecondsRemaining).toBe(0.5)
 
     system.update(world, 0.5)
 
-    expect(bus.state).toBe('moving')
+    expect(bus.state).toBe(BusState.Moving)
     expect(bus.pathIndex).toBe(1)
 
     system.update(world, 1)
@@ -40,11 +41,11 @@ describe('BusMovementSystem', () => {
       y: 340,
     })
     expect(bus.currentStopIndex).toBe(1)
-    expect(bus.state).toBe('waitingAtStop')
+    expect(bus.state).toBe(BusState.WaitingAtStop)
 
     system.update(world, 1)
 
-    expect(bus.state).toBe('moving')
+    expect(bus.state).toBe(BusState.Moving)
     expect(bus.direction).toBe(-1)
   })
 })

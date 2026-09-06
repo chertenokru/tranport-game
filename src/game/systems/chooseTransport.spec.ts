@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { chooseTransport, type TransportChoiceInput } from './chooseTransport'
+import { TransportMode } from '@/game/domain/TransportDecision'
 
 const baseInput: TransportChoiceInput = {
   walkingDistance: 680,
@@ -18,7 +19,7 @@ describe('chooseTransport', () => {
 
     expect(result.walkingTime).toBeCloseTo(17)
     expect(result.busTime).toBeCloseTo(13.55)
-    expect(result.mode).toBe('bus')
+    expect(result.mode).toBe(TransportMode.Bus)
   })
 
   it('chooses walking when the bus advantage is too small', () => {
@@ -29,7 +30,7 @@ describe('chooseTransport', () => {
 
     expect(result.busTime).toBeCloseTo(16)
     expect(result.busTime).toBeLessThan(result.walkingTime)
-    expect(result.mode).toBe('walking')
+    expect(result.mode).toBe(TransportMode.Walking)
   })
 
   it('chooses walking when waiting makes the bus slower', () => {
@@ -39,7 +40,7 @@ describe('chooseTransport', () => {
     })
 
     expect(result.busTime).toBeGreaterThan(result.walkingTime)
-    expect(result.mode).toBe('walking')
+    expect(result.mode).toBe(TransportMode.Walking)
   })
 
   it('rejects invalid movement speeds', () => {

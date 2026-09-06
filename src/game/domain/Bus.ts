@@ -1,7 +1,10 @@
 import type { Vector2 } from './geometry'
 import type { BusId, ResidentId, RouteId } from './ids'
 
-export type BusState = 'moving' | 'waitingAtStop'
+export enum BusState {
+  Moving = 'moving',
+  WaitingAtStop = 'waitingAtStop',
+}
 
 export interface Bus {
   readonly id: BusId

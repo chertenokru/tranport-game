@@ -3,10 +3,15 @@ import { ref } from 'vue'
 import { GAME_CONFIG } from '@/game/config/game.config.ts'
 import type { GameSessionSnapshot } from '@/features/game-session/model/GameSession.ts'
 
-export type GameStatus = 'idle' | 'running' | 'paused' | 'finished'
+export enum GameStatus {
+  Idle = 'idle',
+  Running = 'running',
+  Paused = 'paused',
+  Finished = 'finished',
+}
 
 export const useGameSessionStore = defineStore('GameSession', () => {
-  const status = ref<GameStatus>('idle')
+  const status = ref<GameStatus>(GameStatus.Idle)
   const money = ref<number>(GAME_CONFIG.economy.startingMoney)
   const activeBuses = ref(0)
   const totalResidents = ref(0)
@@ -16,7 +21,7 @@ export const useGameSessionStore = defineStore('GameSession', () => {
   const deliveredPassengers = ref(0)
 
   function start() {
-    status.value = 'running'
+    status.value = GameStatus.Running
     money.value = GAME_CONFIG.economy.startingMoney
     activeBuses.value = 0
     totalResidents.value = 0
@@ -27,13 +32,13 @@ export const useGameSessionStore = defineStore('GameSession', () => {
   }
 
   function togglePause() {
-    if (status.value === 'running') {
-      status.value = 'paused'
+    if (status.value === GameStatus.Running) {
+      status.value = GameStatus.Paused
       return
     }
 
-    if (status.value === 'paused') {
-      status.value = 'running'
+    if (status.value === GameStatus.Paused) {
+      status.value = GameStatus.Running
     }
   }
 

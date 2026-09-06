@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
+import { BusState } from '@/game/domain/Bus'
+import { ResidentState } from '@/game/domain/Resident'
 
 import { PassengerSystem } from './PassengerSystem'
 
@@ -9,7 +11,7 @@ describe('PassengerSystem', () => {
     const world = createWorldWithResident()
     const system = new PassengerSystem()
     const first = world.residents.get('resident-main')!
-    first.state = 'waitingBus'
+    first.state = ResidentState.WaitingBus
     const second = { ...first, id: 'second' }
     const third = { ...first, id: 'third' }
     world.residents.set(second.id, second)
@@ -21,7 +23,7 @@ describe('PassengerSystem', () => {
 
     system.update(world, 0)
     expect(bus.passengerIds).toEqual([first.id, second.id])
-    expect(third.state).toBe('choosingTransport')
+    expect(third.state).toBe(ResidentState.ChoosingTransport)
     system.update(world, 0)
     expect(bus.passengerIds).toHaveLength(2)
     expect(bus.passengerIds).not.toContain(third.id)
@@ -46,23 +48,23 @@ describe('PassengerSystem', () => {
     }
     resident.path = []
     resident.pathIndex = 0
-    resident.state = 'waitingBus'
+    resident.state = ResidentState.WaitingBus
 
     system.update(world, 0)
 
-    expect(resident.state).toBe('insideBus')
+    expect(resident.state).toBe(ResidentState.InsideBus)
     expect(bus.passengerIds).toContain(resident.id)
 
     bus.position = {
       ...officeStop.vehiclePosition,
     }
     bus.currentStopIndex = 1
-    bus.state = 'waitingAtStop'
+    bus.state = BusState.WaitingAtStop
 
     system.update(world, 0)
 
     expect(bus.passengerIds).not.toContain(resident.id)
-    expect(resident.state).toBe('walkingFromStop')
+    expect(resident.state).toBe(ResidentState.WalkingFromStop)
     expect(resident.position).toEqual(officeStop.waitingPosition)
     expect(resident.path.at(-1)).toEqual(destination!.entrance)
   })
