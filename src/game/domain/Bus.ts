@@ -1,5 +1,5 @@
 import type { Vector2 } from './geometry'
-import type { BusId, PedestrianId, RouteId } from './ids'
+import type { BusId, ResidentId, RouteId } from './ids'
 
 export type BusState = 'moving' | 'waitingAtStop'
 
@@ -11,7 +11,7 @@ export interface Bus {
   readonly capacity: number
   readonly size: Vector2
   readonly stopWaitSeconds: number
-  readonly passengerIds: PedestrianId[]
+  readonly passengerIds: ResidentId[]
 
   position: Vector2
   state: BusState

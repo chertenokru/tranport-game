@@ -1,35 +1,66 @@
 import { describe, expect, it } from 'vitest'
 
-import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
 
 import { PassengerSystem } from './PassengerSystem'
 
 describe('PassengerSystem', () => {
+  it('keeps the rest of a group waiting when the bus fills, then boards them on its next visit', () => {
+    const world = createWorldWithResident()
+    const system = new PassengerSystem()
+    const first = world.residents.get('resident-main')!
+    first.state = 'waitingBus'
+    const second = { ...first, id: 'second' }
+    const third = { ...first, id: 'third' }
+    world.residents.set(second.id, second)
+    world.residents.set(third.id, third)
+    const originalBus = world.buses.get('bus-main')!
+    const bus = { ...originalBus, capacity: 2 }
+    world.buses.set(bus.id, bus)
+    world.buses.delete('bus-main1')
+
+    system.update(world, 0)
+    expect(bus.passengerIds).toEqual([first.id, second.id])
+    expect(third.state).toBe('waitingBus')
+    system.update(world, 0)
+    expect(bus.passengerIds).toHaveLength(2)
+
+    bus.currentStopIndex = 1
+    system.update(world, 0)
+    expect(bus.passengerIds).toEqual([])
+    expect(first.state).toBe('walkingFromStop')
+    expect(second.state).toBe('walkingFromStop')
+    bus.currentStopIndex = 0
+    system.update(world, 0)
+    expect(bus.passengerIds).toEqual([third.id])
+    expect(third.state).toBe('insideBus')
+  })
+
   it('boards and drops off a passenger', () => {
-    const world = createVerticalSliceWorld()
+    const world = createWorldWithResident()
     const system = new PassengerSystem()
     const bus = world.buses.get('bus-main')
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const resident = world.residents.get('resident-main')
 
     const houseStop = world.stops.get('stop-house')
     const officeStop = world.stops.get('stop-office')
-    expect(pedestrian).toBeDefined()
-    const destination = world.buildings.get(pedestrian!.destinationBuildingId)
+    expect(resident).toBeDefined()
+    const destination = world.buildings.get(resident!.journey!.destinationBuildingId)
 
-    if (!bus || !pedestrian || !houseStop || !officeStop) {
+    if (!bus || !resident || !houseStop || !officeStop) {
       throw new Error('Initial entities are missing')
     }
-    pedestrian.position = {
+    resident.position = {
       ...houseStop.waitingPosition,
     }
-    pedestrian.path = []
-    pedestrian.pathIndex = 0
-    pedestrian.state = 'waitingBus'
+    resident.path = []
+    resident.pathIndex = 0
+    resident.state = 'waitingBus'
 
     system.update(world, 0)
 
-    expect(pedestrian.state).toBe('insideBus')
-    expect(bus.passengerIds).toContain(pedestrian.id)
+    expect(resident.state).toBe('insideBus')
+    expect(bus.passengerIds).toContain(resident.id)
 
     bus.position = {
       ...officeStop.vehiclePosition,
@@ -39,9 +70,9 @@ describe('PassengerSystem', () => {
 
     system.update(world, 0)
 
-    expect(bus.passengerIds).not.toContain(pedestrian.id)
-    expect(pedestrian.state).toBe('walkingFromStop')
-    expect(pedestrian.position).toEqual(officeStop.waitingPosition)
-    expect(pedestrian.path.at(-1)).toEqual(destination!.entrance)
+    expect(bus.passengerIds).not.toContain(resident.id)
+    expect(resident.state).toBe('walkingFromStop')
+    expect(resident.position).toEqual(officeStop.waitingPosition)
+    expect(resident.path.at(-1)).toEqual(destination!.entrance)
   })
 })

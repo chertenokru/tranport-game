@@ -39,14 +39,15 @@ export class PassengerSystem implements GameSystem {
         continue
       }
 
-      const pedestrian = world.pedestrians.get(passengerId)
+      const resident = world.residents.get(passengerId)
+      const journey = resident?.journey
 
-      if (!pedestrian || pedestrian.destinationStopId !== currentStopId) {
+      if (!resident || !journey || journey.transit?.destinationStopId !== currentStopId) {
         continue
       }
 
       const stop = world.stops.get(currentStopId)
-      const destination = world.buildings.get(pedestrian.destinationBuildingId)
+      const destination = world.buildings.get(journey.destinationBuildingId)
 
       if (!stop || !destination) {
         continue
@@ -54,12 +55,12 @@ export class PassengerSystem implements GameSystem {
 
       bus.passengerIds.splice(index, 1)
 
-      pedestrian.position = {
+      resident.position = {
         ...stop.waitingPosition,
       }
-      pedestrian.path = [stop.waitingPosition, destination.entrance]
-      pedestrian.pathIndex = 1
-      pedestrian.state = 'walkingFromStop'
+      resident.path = [stop.waitingPosition, destination.entrance]
+      resident.pathIndex = 1
+      resident.state = 'walkingFromStop'
     }
   }
 
@@ -75,20 +76,18 @@ export class PassengerSystem implements GameSystem {
       route.stopIds.length,
     )
 
-    for (const pedestrian of world.pedestrians.values()) {
+    for (const resident of world.residents.values()) {
+      const transit = resident.journey?.transit
       if (
-        pedestrian.state !== 'waitingBus' ||
-        pedestrian.routeId !== route.id ||
-        pedestrian.boardingStopId !== currentStopId
+        resident.state !== 'waitingBus' ||
+        !transit ||
+        transit.routeId !== route.id ||
+        transit.boardingStopId !== currentStopId
       ) {
         continue
       }
 
-      if (bus.passengerIds.length >= bus.capacity) {
-        return
-      }
-
-      const destinationIndex = route.stopIds.indexOf(pedestrian.destinationStopId)
+      const destinationIndex = route.stopIds.indexOf(transit.destinationStopId)
 
       if (
         destinationIndex < 0 ||
@@ -97,11 +96,16 @@ export class PassengerSystem implements GameSystem {
         continue
       }
 
-      pedestrian.state = 'insideBus'
-      pedestrian.path = []
-      pedestrian.pathIndex = 0
+      if (bus.passengerIds.length >= bus.capacity) {
+        resident.state = 'choosingTransport'
+        continue
+      }
 
-      bus.passengerIds.push(pedestrian.id)
+      resident.state = 'insideBus'
+      resident.path = []
+      resident.pathIndex = 0
+
+      bus.passengerIds.push(resident.id)
     }
   }
 

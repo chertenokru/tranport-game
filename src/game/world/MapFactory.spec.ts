@@ -94,22 +94,9 @@ describe('createVerticalSliceWorld', () => {
     })
   })
 
-  it('creates the initial pedestrian at the house', () => {
+  it('leaves population creation to the simulation', () => {
     const world = createVerticalSliceWorld()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
-
-    expect(world.pedestrians.size).toBe(1)
-
-    expect(pedestrian).toMatchObject({
-      originBuildingId: 'building-house',
-      destinationBuildingId: 'building-office',
-      position: {
-        x: 140,
-        y: 280,
-      },
-      state: 'choosingTransport',
-      pathIndex: 0,
-      transportDecision: null,
-    })
+    expect(world.residents.size).toBe(0)
+    expect(world.population.secondsUntilNextCycle).toBe(0)
   })
 })

@@ -6,6 +6,8 @@ import { PedestrianMovementSystem } from '@/game/systems/PedestrianMovementSyste
 import { PassengerSystem } from '@/game/systems/PassengerSystem.ts'
 import { EconomySystem } from '@/game/systems/EconomySystem.ts'
 import { RoutePlanningSystem } from '@/game/systems/RoutePlanningSystem.ts'
+import { PopulationSystem } from '@/game/systems/PopulationSystem'
+import { ResidentArrivalSystem } from '@/game/systems/ResidentArrivalSystem'
 
 export interface GameSessionSnapshot {
   elapsedTimeSeconds: number
@@ -13,7 +15,8 @@ export interface GameSessionSnapshot {
   deliveredPassengers: number
   accidents: number
   activeBuses: number
-  activePedestrians: number
+  totalResidents: number
+  idleResidents: number
 }
 
 export class GameSession {
@@ -22,11 +25,13 @@ export class GameSession {
 
   constructor(
     engine: GameEngine = new GameEngine(createVerticalSliceWorld(), [
+      new PopulationSystem(),
       new RoutePlanningSystem(),
       new PedestrianMovementSystem(),
       new BusMovementSystem(),
       new PassengerSystem(),
       new EconomySystem(),
+      new ResidentArrivalSystem(),
     ]),
   ) {
     this.engine = engine
@@ -74,7 +79,10 @@ export class GameSession {
       deliveredPassengers: world.deliveredPassengers,
       accidents: world.accidents,
       activeBuses: world.buses.size,
-      activePedestrians: world.pedestrians.size,
+      totalResidents: world.residents.size,
+      idleResidents: [...world.residents.values()].filter(
+        (resident) => resident.state === 'idleInBuilding',
+      ).length,
     }
   }
 

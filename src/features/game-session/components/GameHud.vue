@@ -5,7 +5,7 @@ import { computed } from 'vue'
 import AppButton from '@/components/common/AppButton.vue'
 
 const gameSessionStore = useGameSessionStore()
-const { status, money, activeBuses, activePedestrians, accidents, elapsedTimeSeconds } =
+const { status, money, activeBuses, totalResidents, idleResidents, accidents, elapsedTimeSeconds } =
   storeToRefs(gameSessionStore)
 
 const statusLabels: Record<GameStatus, string> = {
@@ -36,8 +36,12 @@ const pauseButtonLabel = computed(() => (status.value === 'paused' ? 'Продо
       </div>
 
       <div>
-        <dt>Пешеходы</dt>
-        <dd>🚶 {{ activePedestrians }}</dd>
+        <dt>Жители</dt>
+        <dd
+          :title="`Всего жителей: ${totalResidents}; в зданиях: ${idleResidents}; в пути: ${totalResidents - idleResidents}`"
+        >
+          👥 {{ totalResidents }} / 🏠 {{ idleResidents }}
+        </dd>
       </div>
 
       <div>

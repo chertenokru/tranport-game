@@ -15,7 +15,7 @@ export const VEHICLES_CONFIG = {
     id: 'standard-bus',
     name: 'Стандартный автобус',
     cost: 100,
-    capacity: 20,
+    capacity: 10,
     speed: 80,
     stopWaitSeconds: 1,
     size: {

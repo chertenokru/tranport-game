@@ -7,8 +7,6 @@ import type { MapEdge } from '@/game/world/MapEdge.ts'
 import type { BusRoute } from '@/game/domain/BusRoute.ts'
 import type { Bus } from '@/game/domain/Bus.ts'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
-import { PEDESTRIANS_CONFIG } from '@/game/config/pedestrians.config.ts'
-import type { Pedestrian } from '@/game/domain/Pedestrian.ts'
 
 export function createVerticalSliceWorld(): GameWorld {
   const world = new GameWorld()
@@ -164,27 +162,6 @@ export function createVerticalSliceWorld(): GameWorld {
     waitingSecondsRemaining: standardBusConfig.stopWaitSeconds,
   }
 
-  const pedestrianConfig = PEDESTRIANS_CONFIG.default
-
-  const initialPedestrian: Pedestrian = {
-    id: 'pedestrian-main',
-    originBuildingId: house.id,
-    routeId: mainRoute.id,
-    boardingStopId: houseStop.id,
-    destinationStopId: officeStop.id,
-    destinationBuildingId: office.id,
-    walkingSpeed: pedestrianConfig.walkingSpeed,
-    busTimeAdvantageFactor: pedestrianConfig.busTimeAdvantageFactor,
-    radius: pedestrianConfig.radius,
-    position: {
-      ...house.entrance,
-    },
-    state: 'choosingTransport',
-    path: [],
-    pathIndex: 0,
-    transportDecision: null,
-  }
-
   world.buildings.set(house.id, house)
   world.buildings.set(office.id, office)
 
@@ -202,8 +179,6 @@ export function createVerticalSliceWorld(): GameWorld {
 
   world.buses.set(initialBus.id, initialBus)
   world.buses.set(initialBus1.id, initialBus1)
-
-  world.pedestrians.set(initialPedestrian.id, initialPedestrian)
 
   return world
 }

@@ -9,7 +9,8 @@ export const useGameSessionStore = defineStore('GameSession', () => {
   const status = ref<GameStatus>('idle')
   const money = ref<number>(GAME_CONFIG.economy.startingMoney)
   const activeBuses = ref(0)
-  const activePedestrians = ref(0)
+  const totalResidents = ref(0)
+  const idleResidents = ref(0)
   const accidents = ref(0)
   const elapsedTimeSeconds = ref(0)
   const deliveredPassengers = ref(0)
@@ -18,7 +19,8 @@ export const useGameSessionStore = defineStore('GameSession', () => {
     status.value = 'running'
     money.value = GAME_CONFIG.economy.startingMoney
     activeBuses.value = 0
-    activePedestrians.value = 0
+    totalResidents.value = 0
+    idleResidents.value = 0
     accidents.value = 0
     elapsedTimeSeconds.value = 0
     deliveredPassengers.value = 0
@@ -41,14 +43,16 @@ export const useGameSessionStore = defineStore('GameSession', () => {
     deliveredPassengers.value = snapshot.deliveredPassengers
     accidents.value = snapshot.accidents
     activeBuses.value = snapshot.activeBuses
-    activePedestrians.value = snapshot.activePedestrians
+    totalResidents.value = snapshot.totalResidents
+    idleResidents.value = snapshot.idleResidents
   }
 
   return {
     status,
     money,
     activeBuses,
-    activePedestrians,
+    totalResidents,
+    idleResidents,
     accidents,
     elapsedTimeSeconds,
     deliveredPassengers,

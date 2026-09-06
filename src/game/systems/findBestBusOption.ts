@@ -55,6 +55,14 @@ export function findBestBusOption(input: BestBusOptionInput): BusTravelOption | 
       continue
     }
 
+    if (
+      bus.currentStopIndex === input.boardingStopIndex &&
+      bus.state === 'waitingAtStop' &&
+      bus.passengerIds.length === bus.capacity
+    ) {
+      continue
+    }
+
     const boardingEstimate = estimateBusBoarding({
       bus,
       routeStopCount,

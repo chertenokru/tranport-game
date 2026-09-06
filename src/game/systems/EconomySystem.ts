@@ -6,15 +6,15 @@ export class EconomySystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     void deltaSeconds
 
-    for (const pedestrian of world.pedestrians.values()) {
-      if (pedestrian.state !== 'arrived') {
+    for (const resident of world.residents.values()) {
+      if (resident.state !== 'arrived') {
         continue
       }
 
       world.money += GAME_CONFIG.economy.passengerDeliveredReward
       world.deliveredPassengers += 1
 
-      pedestrian.state = 'idleInBuilding'
+      resident.state = 'idleInBuilding'
     }
   }
 }

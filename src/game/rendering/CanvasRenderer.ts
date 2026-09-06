@@ -2,8 +2,8 @@ import type { GameWorld } from '@/game/core/GameWorld'
 
 import type { GameRenderer } from './GameRenderer'
 import type { TransportDecision } from '@/game/domain/TransportDecision.ts'
-import type { PedestrianId } from '@/game/domain/ids.ts'
-import type { Pedestrian } from '@/game/domain/Pedestrian.ts'
+import type { ResidentId } from '@/game/domain/ids.ts'
+import type { Resident } from '@/game/domain/Resident.ts'
 
 const DECISION_INDICATOR_DURATION_MS = 4_000
 
@@ -14,7 +14,7 @@ interface DecisionIndicator {
 
 export class CanvasRenderer implements GameRenderer {
   private readonly context: CanvasRenderingContext2D
-  private readonly decisionIndicators = new Map<PedestrianId, DecisionIndicator>()
+  private readonly decisionIndicators = new Map<ResidentId, DecisionIndicator>()
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const context = canvas.getContext('2d')
@@ -49,18 +49,18 @@ export class CanvasRenderer implements GameRenderer {
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
   }
   private updateDecisionIndicators(world: GameWorld, currentTime: number): void {
-    for (const pedestrian of world.pedestrians.values()) {
-      const decision = pedestrian.transportDecision
+    for (const resident of world.residents.values()) {
+      const decision = resident.transportDecision
 
       if (!decision) {
-        this.decisionIndicators.delete(pedestrian.id)
+        this.decisionIndicators.delete(resident.id)
         continue
       }
 
-      const currentIndicator = this.decisionIndicators.get(pedestrian.id)
+      const currentIndicator = this.decisionIndicators.get(resident.id)
 
       if (!currentIndicator || currentIndicator.decision !== decision) {
-        this.decisionIndicators.set(pedestrian.id, {
+        this.decisionIndicators.set(resident.id, {
           decision,
           expiresAt: currentTime + DECISION_INDICATOR_DURATION_MS,
         })
@@ -68,7 +68,7 @@ export class CanvasRenderer implements GameRenderer {
     }
 
     for (const pedestrianId of this.decisionIndicators.keys()) {
-      if (!world.pedestrians.has(pedestrianId)) {
+      if (!world.residents.has(pedestrianId)) {
         this.decisionIndicators.delete(pedestrianId)
       }
     }
@@ -104,7 +104,7 @@ export class CanvasRenderer implements GameRenderer {
     const context = this.context
 
     context.save()
-
+    const residents = [...world.residents.values()]
     for (const building of world.buildings.values()) {
       context.fillStyle = building.type === 'residential' ? '#f59e0b' : '#64748b'
 
@@ -120,6 +120,15 @@ export class CanvasRenderer implements GameRenderer {
         building.position.x + building.size.x / 2,
         building.position.y + building.size.y / 2,
       )
+      const residentsCount = residents.filter(
+        (r) => r.currentBuildingId === building.id && r.state === 'idleInBuilding',
+      ).length
+      context.textAlign = 'left'
+      context.textBaseline = 'middle'
+      context.font = 'bold 11px sans-serif'
+
+      context.fillStyle = building.type === 'residential' ? '#0f172a' : '#f8fafc'
+      context.fillText(`×${residentsCount}`, building.position.x + 10, building.position.y + 15)
     }
 
     context.restore()
@@ -185,6 +194,13 @@ export class CanvasRenderer implements GameRenderer {
       context.arc(halfWidth - 10, halfHeight, 4, 0, Math.PI * 2)
       context.fill()
 
+      context.font = 'bold 11px sans-serif'
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.fillStyle = '#2b35bc'
+
+      if (bus.direction === -1) context.scale(-1, 1)
+      context.fillText(`×${bus.passengerIds.length}`, 0, 4)
       context.restore()
     }
   }
@@ -195,26 +211,65 @@ export class CanvasRenderer implements GameRenderer {
     context.save()
     context.fillStyle = '#16a34a'
 
-    for (const pedestrian of world.pedestrians.values()) {
+    const groups: Resident[][] = []
+    for (const resident of world.residents.values()) {
       if (
-        pedestrian.state === 'insideBus' ||
-        pedestrian.state === 'idleInBuilding' ||
-        pedestrian.state === 'dead'
+        resident.state === 'insideBus' ||
+        resident.state === 'idleInBuilding' ||
+        resident.state === 'dead'
       ) {
         continue
       }
 
+      const mergedGroup: Resident[] = []
+      for (let index = groups.length - 1; index >= 0; index--) {
+        const group = groups[index]!
+        const overlaps = group.some((member) => {
+          const dx = member.position.x - resident.position.x
+          const dy = member.position.y - resident.position.y
+          const combinedRadius = member.radius + resident.radius
+
+          return dx * dx + dy * dy <= combinedRadius * combinedRadius
+        })
+
+        if (overlaps) {
+          mergedGroup.unshift(...group)
+          groups.splice(index, 1)
+        }
+      }
+
+      mergedGroup.push(resident)
+      groups.push(mergedGroup)
+    }
+
+    for (const group of groups) {
+      const resident = group[0]!
+
       context.beginPath()
-      context.arc(pedestrian.position.x, pedestrian.position.y, pedestrian.radius, 0, Math.PI * 2)
+      context.arc(resident.position.x, resident.position.y, resident.radius, 0, Math.PI * 2)
       context.fill()
-      this.drawDecisionIndicator(pedestrian, currentTime)
+      this.drawDecisionIndicator(resident, currentTime)
+
+      if (group.length > 1) {
+        context.save()
+        context.font = 'bold 10px sans-serif'
+        context.textAlign = 'left'
+        context.textBaseline = 'middle'
+        context.fillStyle = '#0f172a'
+        context.fillText(
+          `×${group.length}`,
+          resident.position.x + resident.radius + 3,
+          resident.position.y,
+        )
+        context.restore()
+      }
     }
 
     context.restore()
   }
 
-  private drawDecisionIndicator(pedestrian: Pedestrian, currentTime: number): void {
-    const indicator = this.decisionIndicators.get(pedestrian.id)
+  private drawDecisionIndicator(resident: Resident, currentTime: number): void {
+    const indicator = this.decisionIndicators.get(resident.id)
 
     if (!indicator || currentTime >= indicator.expiresAt) {
       return
@@ -223,25 +278,28 @@ export class CanvasRenderer implements GameRenderer {
     const context = this.context
     const decision = indicator.decision
 
-    const walkingLabel = `${decision.walkingTime.toFixed(1)}с`
-    const busLabel = decision.busTime === null ? '—' : `${decision.busTime.toFixed(1)}с`
+    const walkingLabel = `${decision.walkingTime.toFixed(1)}`
+    const busLabel = decision.busTime === null ? '—' : `${decision.busTime.toFixed(1)}`
 
     const selectedIcon = decision.selectedMode === 'bus' ? '🚌' : '🚶'
+    const otherIcon = decision.selectedMode === 'bus' ? '🚶' : '🚌'
+    const selectedTime = decision.selectedMode === 'bus' ? busLabel : walkingLabel
+    const otherTime = decision.selectedMode === 'bus' ? walkingLabel : busLabel
 
-    const label = `🚶 ${walkingLabel}  🚌 ${busLabel}  → ${selectedIcon}`
+    const label = `${selectedIcon} ${selectedTime} (${otherIcon} ${otherTime})`
 
     context.save()
-    context.font = '12px sans-serif'
+    context.font = '10px sans-serif'
 
     const horizontalPadding = 8
-    const indicatorHeight = 24
-    const indicatorWidth = context.measureText(label).width + horizontalPadding * 2
+    const indicatorHeight = 20
+    const indicatorWidth = context.measureText(label).width + horizontalPadding
 
-    const desiredX = pedestrian.position.x - indicatorWidth / 2
+    const desiredX = resident.position.x - indicatorWidth / 2
 
     const indicatorX = Math.max(4, Math.min(desiredX, this.canvas.width - indicatorWidth - 4))
 
-    const indicatorY = pedestrian.position.y - pedestrian.radius - indicatorHeight - 10
+    const indicatorY = resident.position.y - resident.radius - indicatorHeight - 10
 
     const remainingTime = indicator.expiresAt - currentTime
     context.globalAlpha = Math.min(1, remainingTime / 500)
@@ -252,19 +310,23 @@ export class CanvasRenderer implements GameRenderer {
         : decision.selectedMode === 'bus'
           ? '#2563eb'
           : '#f59e0b'
-    context.lineWidth = 2
+    context.lineWidth = 1
 
     context.beginPath()
-    context.moveTo(pedestrian.position.x, pedestrian.position.y - pedestrian.radius)
+    context.moveTo(resident.position.x, resident.position.y - resident.radius)
     context.lineTo(indicatorX + indicatorWidth / 2, indicatorY + indicatorHeight)
     context.stroke()
 
-    context.fillStyle = 'rgba(15, 23, 42, 0.92)'
-    context.fillRect(indicatorX, indicatorY, indicatorWidth, indicatorHeight)
+    const cornerRadius = 6
 
-    context.strokeRect(indicatorX, indicatorY, indicatorWidth, indicatorHeight)
+    context.beginPath()
+    context.roundRect(indicatorX, indicatorY, indicatorWidth, indicatorHeight, cornerRadius)
 
-    context.fillStyle = '#f8fafc'
+    context.fillStyle = 'rgb(192 192 195 / 0.92)'
+    context.fill()
+    context.stroke()
+
+    context.fillStyle = '#000000'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
 

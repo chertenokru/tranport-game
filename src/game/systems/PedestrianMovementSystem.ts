@@ -1,10 +1,10 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import type { Pedestrian, PedestrianState } from '@/game/domain/Pedestrian'
+import type { Resident, ResidentState } from '@/game/domain/Resident'
 
 import { moveAlongPath } from './movement/moveAlongPath'
 
-const MOVING_STATES: ReadonlySet<PedestrianState> = new Set([
+const MOVING_STATES: ReadonlySet<ResidentState> = new Set([
   'walking',
   'walkingToStop',
   'walkingFromStop',
@@ -13,47 +13,47 @@ const MOVING_STATES: ReadonlySet<PedestrianState> = new Set([
 
 export class PedestrianMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
-    for (const pedestrian of world.pedestrians.values()) {
-      if (!MOVING_STATES.has(pedestrian.state)) {
+    for (const resident of world.residents.values()) {
+      if (!MOVING_STATES.has(resident.state)) {
         continue
       }
 
-      this.movePedestrian(pedestrian, deltaSeconds)
+      this.movePedestrian(resident, deltaSeconds)
     }
   }
 
-  private movePedestrian(pedestrian: Pedestrian, deltaSeconds: number): void {
+  private movePedestrian(resident: Resident, deltaSeconds: number): void {
     const movement = moveAlongPath({
-      position: pedestrian.position,
-      path: pedestrian.path,
-      pathIndex: pedestrian.pathIndex,
-      maxDistance: pedestrian.walkingSpeed * deltaSeconds,
+      position: resident.position,
+      path: resident.path,
+      pathIndex: resident.pathIndex,
+      maxDistance: resident.walkingSpeed * deltaSeconds,
     })
 
-    pedestrian.position = movement.position
-    pedestrian.pathIndex = movement.pathIndex
+    resident.position = movement.position
+    resident.pathIndex = movement.pathIndex
 
     if (movement.completed) {
-      this.finishPath(pedestrian)
+      this.finishPath(resident)
     }
   }
 
-  private finishPath(pedestrian: Pedestrian): void {
-    pedestrian.path = []
-    pedestrian.pathIndex = 0
+  private finishPath(resident: Resident): void {
+    resident.path = []
+    resident.pathIndex = 0
 
-    switch (pedestrian.state) {
+    switch (resident.state) {
       case 'walkingToStop':
-        pedestrian.state = 'waitingBus'
+        resident.state = 'waitingBus'
         break
 
       case 'walking':
       case 'walkingFromStop':
-        pedestrian.state = 'arrived'
+        resident.state = 'arrived'
         break
 
       case 'crossingRoad':
-        pedestrian.state = 'walking'
+        resident.state = 'walking'
         break
     }
   }

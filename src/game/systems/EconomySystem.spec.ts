@@ -1,27 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import { EconomySystem } from '@/game/systems/EconomySystem.ts'
-import { createVerticalSliceWorld } from '@/game/world/MapFactory.ts'
+import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
 import { GAME_CONFIG } from '@/game/config/game.config.ts'
 
-describe('createVerticalSliceWorld', () => {
+describe('createWorldWithResident', () => {
   it('rewards a completed journey exactly once', () => {
-    const world = createVerticalSliceWorld()
+    const world = createWorldWithResident()
     const system = new EconomySystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const resident = world.residents.get('resident-main')
     const initialMoney = world.money
 
-    if (!pedestrian) {
-      throw new Error('Initial pedestrian is missing')
+    if (!resident) {
+      throw new Error('Initial resident is missing')
     }
 
-    pedestrian.state = 'arrived'
+    resident.state = 'arrived'
 
     system.update(world, 0)
 
     expect(world.money).toBe(initialMoney + GAME_CONFIG.economy.passengerDeliveredReward)
     expect(world.deliveredPassengers).toBe(1)
-    expect(world.pedestrians.has(pedestrian.id)).toBe(true)
-    expect(pedestrian.state).toBe('idleInBuilding')
+    expect(world.residents.has(resident.id)).toBe(true)
+    expect(resident.state).toBe('idleInBuilding')
 
     system.update(world, 0)
 

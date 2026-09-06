@@ -1,30 +1,30 @@
 import { describe, expect, it } from 'vitest'
 
-import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
 
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 
 describe('PedestrianMovementSystem', () => {
-  it('moves a pedestrian toward the bus stop', () => {
-    const world = createVerticalSliceWorld()
+  it('moves a resident toward the bus stop', () => {
+    const world = createWorldWithResident()
     const system = new PedestrianMovementSystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const resident = world.residents.get('resident-main')
 
-    expect(pedestrian).toBeDefined()
+    expect(resident).toBeDefined()
 
-    if (!pedestrian) {
-      throw new Error('Initial pedestrian is missing')
+    if (!resident) {
+      throw new Error('Initial resident is missing')
     }
-    const busStop = world.stops.get(pedestrian.boardingStopId)
+    const busStop = world.stops.get(resident.journey!.transit!.boardingStopId)
 
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-    pedestrian.state = 'walkingToStop'
-    pedestrian.path = [pedestrian.position, busStop.waitingPosition]
-    pedestrian.pathIndex = 1
+    resident.state = 'walkingToStop'
+    resident.path = [resident.position, busStop.waitingPosition]
+    resident.pathIndex = 1
     const startingPosition = {
-      ...pedestrian.position,
+      ...resident.position,
     }
 
     const initialDistanceToStop = Math.hypot(
@@ -35,42 +35,42 @@ describe('PedestrianMovementSystem', () => {
     system.update(world, 1)
 
     const travelledDistance = Math.hypot(
-      pedestrian.position.x - startingPosition.x,
-      pedestrian.position.y - startingPosition.y,
+      resident.position.x - startingPosition.x,
+      resident.position.y - startingPosition.y,
     )
 
     const remainingDistanceToStop = Math.hypot(
-      busStop.waitingPosition.x - pedestrian.position.x,
-      busStop.waitingPosition.y - pedestrian.position.y,
+      busStop.waitingPosition.x - resident.position.x,
+      busStop.waitingPosition.y - resident.position.y,
     )
 
-    expect(travelledDistance).toBeCloseTo(pedestrian.walkingSpeed, 5)
+    expect(travelledDistance).toBeCloseTo(resident.walkingSpeed, 5)
     expect(remainingDistanceToStop).toBeLessThan(initialDistanceToStop)
-    expect(pedestrian.state).toBe('walkingToStop')
+    expect(resident.state).toBe('walkingToStop')
   })
 
   it('starts waiting after reaching the stop', () => {
-    const world = createVerticalSliceWorld()
+    const world = createWorldWithResident()
     const system = new PedestrianMovementSystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const resident = world.residents.get('resident-main')
 
-    if (!pedestrian) {
-      throw new Error('Initial pedestrian is missing')
+    if (!resident) {
+      throw new Error('Initial resident is missing')
     }
 
-    const busStop = world.stops.get(pedestrian.boardingStopId)
+    const busStop = world.stops.get(resident.journey!.transit!.boardingStopId)
 
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-    pedestrian.state = 'walkingToStop'
-    pedestrian.path = [pedestrian.position, busStop.waitingPosition]
-    pedestrian.pathIndex = 1
+    resident.state = 'walkingToStop'
+    resident.path = [resident.position, busStop.waitingPosition]
+    resident.pathIndex = 1
     system.update(world, 10)
 
-    expect(pedestrian.position).toEqual(busStop.waitingPosition)
-    expect(pedestrian.state).toBe('waitingBus')
-    expect(pedestrian.path).toEqual([])
-    expect(pedestrian.pathIndex).toBe(0)
+    expect(resident.position).toEqual(busStop.waitingPosition)
+    expect(resident.state).toBe('waitingBus')
+    expect(resident.path).toEqual([])
+    expect(resident.pathIndex).toBe(0)
   })
 })
