@@ -151,7 +151,7 @@ export function createVerticalSliceWorld(): GameWorld {
     speed: standardBusConfig.speed,
     capacity: standardBusConfig.capacity,
     passengerIds: [],
-    stopWaitSeconds: standardBusConfig.stopWaitSeconds * 2,
+    stopWaitSeconds: standardBusConfig.stopWaitSeconds * 8,
     position: {
       ...officeStop.vehiclePosition,
     },
@@ -178,9 +178,9 @@ export function createVerticalSliceWorld(): GameWorld {
     position: {
       ...house.entrance,
     },
-    state: 'walkingToStop',
-    path: [house.entrance, houseStop.waitingPosition],
-    pathIndex: 1,
+    state: 'choosingTransport',
+    path: [],
+    pathIndex: 0,
   }
 
   world.buildings.set(house.id, house)

@@ -3,6 +3,7 @@ import type { GameWorld } from '@/game/core/GameWorld'
 import type { Bus } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
+import { getRouteDepartureDirection } from '@/game/systems/movement/getRouteDepartureDirection.ts'
 
 export class PassengerSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
@@ -68,7 +69,11 @@ export class PassengerSystem implements GameSystem {
     route: BusRoute,
     currentStopId: BusStopId,
   ): void {
-    const departureDirection = this.getDepartureDirection(bus, route)
+    const departureDirection = getRouteDepartureDirection(
+      bus.currentStopIndex,
+      bus.direction,
+      route.stopIds.length,
+    )
 
     for (const pedestrian of world.pedestrians.values()) {
       if (
@@ -98,16 +103,6 @@ export class PassengerSystem implements GameSystem {
 
       bus.passengerIds.push(pedestrian.id)
     }
-  }
-
-  private getDepartureDirection(bus: Bus, route: BusRoute): 1 | -1 {
-    const nextStopIndex = bus.currentStopIndex + bus.direction
-
-    if (nextStopIndex < 0 || nextStopIndex >= route.stopIds.length) {
-      return bus.direction === 1 ? -1 : 1
-    }
-
-    return bus.direction
   }
 
   private isDestinationAhead(

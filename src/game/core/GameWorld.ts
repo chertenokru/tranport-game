@@ -1,7 +1,14 @@
 import { GAME_CONFIG } from '@/game/config/game.config'
 import type { BusStop } from '@/game/domain/BusStop.ts'
 import type { Building } from '@/game/domain/Building.ts'
-import type { BuildingId, BusId, BusStopId, PedestrianId, RoadId, RouteId } from '@/game/domain/ids.ts'
+import type {
+  BuildingId,
+  BusId,
+  BusStopId,
+  PedestrianId,
+  RoadId,
+  RouteId,
+} from '@/game/domain/ids.ts'
 import type { Road } from '@/game/domain/Road.ts'
 import type { MapEdge, MapEdgeId } from '@/game/world/MapEdge.ts'
 import type { MapNode, MapNodeId } from '@/game/world/MapNode.ts'

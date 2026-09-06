@@ -81,13 +81,20 @@ describe('GameSession', () => {
     expect(renderedWorlds).toHaveLength(2)
   })
 
-  it('completes the initial passenger journey', () => {
+  it('completes a passenger journey by bus when the service is attractive', () => {
     const session = new GameSession()
     const pedestrian = session.engine.world.pedestrians.get('pedestrian-main')
+    const approachingBus = session.engine.world.buses.get('bus-main1')
 
-    if (!pedestrian) {
-      throw new Error('Initial pedestrian is missing')
+    if (!pedestrian || !approachingBus) {
+      throw new Error('Initial entities are missing')
     }
+
+    session.engine.world.buses.set(approachingBus.id, {
+      ...approachingBus,
+      stopWaitSeconds: 0.25,
+      waitingSecondsRemaining: 0,
+    })
 
     const destination = session.engine.world.buildings.get(pedestrian.destinationBuildingId)
 
@@ -107,6 +114,8 @@ describe('GameSession', () => {
     expect(visitedStates.has('waitingBus')).toBe(true)
     expect(visitedStates.has('insideBus')).toBe(true)
     expect(visitedStates.has('walkingFromStop')).toBe(true)
+    expect(visitedStates.has('choosingTransport')).toBe(true)
+    expect(visitedStates.has('walkingToStop')).toBe(true)
 
     expect(pedestrian.state).toBe('idleInBuilding')
     expect(pedestrian.position).toEqual(destination.entrance)

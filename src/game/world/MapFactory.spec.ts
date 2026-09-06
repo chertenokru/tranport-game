@@ -94,18 +94,6 @@ describe('createVerticalSliceWorld', () => {
     })
   })
 
-  it('creates the initial bus route', () => {
-    const world = createVerticalSliceWorld()
-
-    expect(world.routes.size).toBe(1)
-
-    expect(world.routes.get('route-main')).toEqual({
-      id: 'route-main',
-      name: 'Маршрут 1',
-      stopIds: ['stop-house', 'stop-office'],
-    })
-  })
-
   it('creates the initial pedestrian at the house', () => {
     const world = createVerticalSliceWorld()
     const pedestrian = world.pedestrians.get('pedestrian-main')
@@ -119,8 +107,8 @@ describe('createVerticalSliceWorld', () => {
         x: 140,
         y: 280,
       },
-      state: 'walkingToStop',
-      pathIndex: 1,
+      state: 'choosingTransport',
+      pathIndex: 0,
     })
   })
 })

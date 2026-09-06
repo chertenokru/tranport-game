@@ -5,6 +5,7 @@ import { BusMovementSystem } from '@/game/systems/BusMovementSystem.ts'
 import { PedestrianMovementSystem } from '@/game/systems/PedestrianMovementSystem.ts'
 import { PassengerSystem } from '@/game/systems/PassengerSystem.ts'
 import { EconomySystem } from '@/game/systems/EconomySystem.ts'
+import { RoutePlanningSystem } from '@/game/systems/RoutePlanningSystem.ts'
 
 export interface GameSessionSnapshot {
   elapsedTimeSeconds: number
@@ -21,6 +22,7 @@ export class GameSession {
 
   constructor(
     engine: GameEngine = new GameEngine(createVerticalSliceWorld(), [
+      new RoutePlanningSystem(),
       new PedestrianMovementSystem(),
       new BusMovementSystem(),
       new PassengerSystem(),

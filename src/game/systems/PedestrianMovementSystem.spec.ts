@@ -20,7 +20,9 @@ describe('PedestrianMovementSystem', () => {
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-
+    pedestrian.state = 'walkingToStop'
+    pedestrian.path = [pedestrian.position, busStop.waitingPosition]
+    pedestrian.pathIndex = 1
     const startingPosition = {
       ...pedestrian.position,
     }
@@ -61,7 +63,9 @@ describe('PedestrianMovementSystem', () => {
     if (!busStop) {
       throw new Error('Boarding stop is missing')
     }
-
+    pedestrian.state = 'walkingToStop'
+    pedestrian.path = [pedestrian.position, busStop.waitingPosition]
+    pedestrian.pathIndex = 1
     system.update(world, 10)
 
     expect(pedestrian.position).toEqual(busStop.waitingPosition)
