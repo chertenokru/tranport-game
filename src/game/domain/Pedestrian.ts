@@ -19,6 +19,7 @@ export interface Pedestrian {
   readonly originBuildingId: BuildingId
   readonly destinationBuildingId: BuildingId
   readonly walkingSpeed: number
+  readonly busTimeAdvantageFactor: number
   readonly radius: number
   readonly routeId: RouteId
   readonly boardingStopId: BusStopId

@@ -8,18 +8,27 @@ describe('RoutePlanningSystem', () => {
   it('chooses the bus when a suitable bus arrives soon enough', () => {
     const world = createVerticalSliceWorld()
     const system = new RoutePlanningSystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const initialPedestrian = world.pedestrians.get('pedestrian-main')
     const boardingStop = world.stops.get('stop-house')
     const approachingBus = world.buses.get('bus-main')
 
-    if (!pedestrian || !boardingStop || !approachingBus) {
+    if (!initialPedestrian || !boardingStop || !approachingBus) {
       throw new Error('Initial entities are missing')
     }
+
+    const pedestrian = {
+      ...initialPedestrian,
+      walkingSpeed: 40,
+      busTimeAdvantageFactor: 0.9,
+    }
+
+    world.pedestrians.set(pedestrian.id, pedestrian)
 
     world.buses.delete('bus-main1')
 
     world.buses.set(approachingBus.id, {
       ...approachingBus,
+      speed: 80,
       stopWaitSeconds: 4,
       waitingSecondsRemaining: 4,
     })
@@ -47,14 +56,29 @@ describe('RoutePlanningSystem', () => {
   it('chooses walking when the passenger misses the nearby bus', () => {
     const world = createVerticalSliceWorld()
     const system = new RoutePlanningSystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const initialPedestrian = world.pedestrians.get('pedestrian-main')
     const destination = world.buildings.get('building-office')
+    const availableBus = world.buses.get('bus-main')
 
-    if (!pedestrian || !destination) {
+    if (!initialPedestrian || !destination || !availableBus) {
       throw new Error('Initial entities are missing')
     }
 
+    const pedestrian = {
+      ...initialPedestrian,
+      walkingSpeed: 40,
+      busTimeAdvantageFactor: 0.9,
+    }
+
+    world.pedestrians.set(pedestrian.id, pedestrian)
+
     world.buses.delete('bus-main1')
+    world.buses.set(availableBus.id, {
+      ...availableBus,
+      speed: 40,
+      stopWaitSeconds: 1,
+      waitingSecondsRemaining: 1,
+    })
 
     pedestrian.state = 'choosingTransport'
     pedestrian.path = []
@@ -76,11 +100,19 @@ describe('RoutePlanningSystem', () => {
   it('records that bus service is unavailable', () => {
     const world = createVerticalSliceWorld()
     const system = new RoutePlanningSystem()
-    const pedestrian = world.pedestrians.get('pedestrian-main')
+    const initialPedestrian = world.pedestrians.get('pedestrian-main')
 
-    if (!pedestrian) {
+    if (!initialPedestrian) {
       throw new Error('Initial pedestrian is missing')
     }
+
+    const pedestrian = {
+      ...initialPedestrian,
+      walkingSpeed: 40,
+      busTimeAdvantageFactor: 0.9,
+    }
+
+    world.pedestrians.set(pedestrian.id, pedestrian)
 
     world.buses.clear()
 

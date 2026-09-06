@@ -174,6 +174,7 @@ export function createVerticalSliceWorld(): GameWorld {
     destinationStopId: officeStop.id,
     destinationBuildingId: office.id,
     walkingSpeed: pedestrianConfig.walkingSpeed,
+    busTimeAdvantageFactor: pedestrianConfig.busTimeAdvantageFactor,
     radius: pedestrianConfig.radius,
     position: {
       ...house.entrance,

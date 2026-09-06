@@ -1,4 +1,3 @@
-import { PEDESTRIANS_CONFIG } from '@/game/config/pedestrians.config'
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
 import type { Pedestrian } from '@/game/domain/Pedestrian'
@@ -114,7 +113,7 @@ export class RoutePlanningSystem implements GameSystem {
       expectedWaitingTime: bestBusOption.waitingTime,
       busTravelTime: bestBusOption.busTravelTime,
       walkingFromStopDistance,
-      busTimeAdvantageFactor: PEDESTRIANS_CONFIG.default.busTimeAdvantageFactor,
+      busTimeAdvantageFactor: pedestrian.busTimeAdvantageFactor,
     })
 
     pedestrian.transportDecision = {
@@ -145,9 +144,7 @@ export class RoutePlanningSystem implements GameSystem {
         walkingFromStopTime: (walkingFromStopDistance / pedestrian.walkingSpeed).toFixed(2),
 
         busTime: choice.busTime.toFixed(2),
-        requiredBusTime: (
-          choice.walkingTime * PEDESTRIANS_CONFIG.default.busTimeAdvantageFactor
-        ).toFixed(2),
+        requiredBusTime: (choice.walkingTime * pedestrian.busTimeAdvantageFactor).toFixed(2),
 
         selectedMode: choice.mode,
       },

@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import { PEDESTRIANS_CONFIG } from '@/game/config/pedestrians.config'
-
 import { chooseTransport, type TransportChoiceInput } from './chooseTransport'
 
 const baseInput: TransportChoiceInput = {
@@ -11,7 +9,7 @@ const baseInput: TransportChoiceInput = {
   expectedWaitingTime: 2,
   busTravelTime: 5.5,
   walkingFromStopDistance: 121,
-  busTimeAdvantageFactor: PEDESTRIANS_CONFIG.default.busTimeAdvantageFactor,
+  busTimeAdvantageFactor: 0.9,
 }
 
 describe('chooseTransport', () => {
