@@ -93,6 +93,6 @@ export class GameSession {
   }
 
   private render(): void {
-    this.renderer?.render(this.engine.world)
+    this.renderer?.render(this.engine.world, this.engine.clock.elapsedTime * 1_000)
   }
 }

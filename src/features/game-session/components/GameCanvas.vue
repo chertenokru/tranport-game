@@ -1,20 +1,20 @@
 <script lang="ts" setup>
 import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 
-import { CanvasRenderer } from '@/game/rendering/CanvasRenderer'
+import { type CanvasGameRenderer, createCanvasRenderer } from '@/game/rendering/createCanvasRenderer'
 import { useGameSessionContext } from '@/features/game-session/composables/useGameSessionContext'
 
 const gameSession = useGameSessionContext()
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 
-let renderer: CanvasRenderer | null = null
+let renderer: CanvasGameRenderer | null = null
 
 onMounted(() => {
   if (!canvas.value) {
     throw new Error('Game canvas element is not mounted')
   }
 
-  renderer = new CanvasRenderer(canvas.value)
+  renderer = createCanvasRenderer(canvas.value)
   gameSession.attachRenderer(renderer)
 })
 
@@ -24,6 +24,7 @@ onUnmounted(() => {
   }
 
   gameSession.detachRenderer(renderer)
+  renderer.dispose()
   renderer = null
 })
 </script>
