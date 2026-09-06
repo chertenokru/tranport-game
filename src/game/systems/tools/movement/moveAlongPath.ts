@@ -12,6 +12,7 @@ export interface MoveAlongPathResult {
   readonly pathIndex: number
   readonly completed: boolean
   readonly remainingDistance: number
+  readonly heading: Vector2 | null
 }
 
 export function moveAlongPath({
@@ -31,7 +32,7 @@ export function moveAlongPath({
   let currentPosition = position
   let currentPathIndex = pathIndex
   let remainingDistance = maxDistance
-
+  let heading: Vector2 | null = null
   while (currentPathIndex < path.length) {
     const target = path[currentPathIndex]
 
@@ -47,6 +48,12 @@ export function moveAlongPath({
       currentPosition = target
       currentPathIndex++
       continue
+    }
+    if (remainingDistance > 0) {
+      heading = {
+        x: offsetX / distance,
+        y: offsetY / distance,
+      }
     }
 
     if (remainingDistance < distance) {
@@ -71,5 +78,6 @@ export function moveAlongPath({
     pathIndex: currentPathIndex,
     completed: currentPathIndex >= path.length,
     remainingDistance,
+    heading,
   }
 }

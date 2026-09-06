@@ -25,6 +25,8 @@ describe('moveAlongPath', () => {
       pathIndex: 1,
       completed: false,
       remainingDistance: 0,
+      // moves partway toward the next waypoint
+      heading: { x: 1, y: 0 },
     })
   })
 
@@ -44,6 +46,8 @@ describe('moveAlongPath', () => {
       pathIndex: 2,
       completed: false,
       remainingDistance: 0,
+      // continues through multiple waypoints
+      heading: { x: 0, y: 1 },
     })
   })
 
@@ -63,6 +67,8 @@ describe('moveAlongPath', () => {
       pathIndex: 3,
       completed: true,
       remainingDistance: 5,
+      // returns unused distance after completing the path
+      heading: { x: 0, y: 1 },
     })
   })
 
@@ -84,5 +90,17 @@ describe('moveAlongPath', () => {
         maxDistance: 10,
       }),
     ).toThrow(RangeError)
+  })
+
+  it('returns no heading when no movement occurs', () => {
+    const result = moveAlongPath({
+      position: path[0],
+      path,
+      pathIndex: 1,
+      maxDistance: 0,
+    })
+
+    expect(result.heading).toBeNull()
+    expect(result.position).toEqual(path[0])
   })
 })

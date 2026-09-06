@@ -8,6 +8,7 @@ import { GameWorld } from '@/game/core/GameWorld'
 import { GameSession } from './GameSession'
 import type { GameRenderer } from '@/game/rendering/GameRenderer.ts'
 import { ResidentState } from '@/game/domain/Resident'
+import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 describe('GameSession', () => {
   afterEach(() => vi.restoreAllMocks())
@@ -152,7 +153,7 @@ describe('GameSession', () => {
     expect(visitedStates.has(ResidentState.WalkingToStop)).toBe(true)
 
     expect(resident.state).toBe(ResidentState.IdleInBuilding)
-    expect(resident.position).toEqual(destination.entrance)
+    expect(resident.position).toEqual(getBuildingEntrance(destination))
     expect(session.engine.world.residents.has(resident.id)).toBe(true)
 
     for (const bus of session.engine.world.buses.values()) {

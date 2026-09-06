@@ -10,6 +10,7 @@ import { RoutePlanningSystem } from './routePlanning/RoutePlanningSystem.ts'
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 import { EconomySystem } from './EconomySystem'
 import { ResidentState } from '@/game/domain/Resident'
+import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 function config(overrides: Partial<PopulationConfig> = {}): PopulationConfig {
   return { ...POPULATION_CONFIG, cycleIntervalSeconds: 10, groupProbability: 0, ...overrides }
@@ -31,7 +32,7 @@ describe('PopulationSystem', () => {
         destinationBuildingId: 'building-office',
         transit: null,
       },
-      position: world.buildings.get('building-house')!.entrance,
+      position: getBuildingEntrance(world.buildings.get('building-house')!),
     })
     system.update(world, 9)
     expect(world.residents.size).toBe(1)
@@ -163,7 +164,7 @@ describe('Resident lifecycle', () => {
     for (let step = 0; step < 180; step++) engine.update(0.1)
     expect(resident.state).toBe(ResidentState.IdleInBuilding)
     expect(resident.currentBuildingId).toBe('building-office')
-    expect(resident.position).toEqual(world.buildings.get('building-office')!.entrance)
+    expect(resident.position).toEqual(getBuildingEntrance(world.buildings.get('building-office')!))
     expect(resident.journey).toBeNull()
     expect(resident.transportDecision).toBeNull()
     expect(world.deliveredPassengers).toBe(1)

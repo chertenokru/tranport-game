@@ -1,31 +1,53 @@
 import { type Building, BuildingType } from '@/game/domain/Building'
+import { getDirectionAngle } from '@/game/tools/geometry.ts'
 
+const BUILDING_COLORS: Record<BuildingType, { body: string; text: string }> = {
+  [BuildingType.Residential]: {
+    body: '#f59e0b',
+    text: '#0f172a',
+  },
+  [BuildingType.Office]: {
+    body: '#64748b',
+    text: '#f8fafc',
+  },
+  [BuildingType.Shop]: {
+    body: '#8b5cf6',
+    text: '#f8fafc',
+  },
+}
 export function drawBuilding(
   context: CanvasRenderingContext2D,
   building: Readonly<Building>,
   residentsCount: number,
 ): void {
+  const { position, size, direction } = building
+  const colors = BUILDING_COLORS[building.type]
+  const angle = getDirectionAngle(direction)
   context.save()
 
   try {
-    const residential = building.type === BuildingType.Residential
-    const { position, size } = building
+    context.translate(position.x, position.y)
+    context.rotate(angle)
 
-    context.fillStyle = residential ? '#f59e0b' : '#64748b'
-    context.fillRect(position.x, position.y, size.x, size.y)
+    context.fillStyle = colors.body
+    context.fillRect(-size.x / 2, -size.y / 2, size.x, size.y)
 
-    context.fillStyle = '#f8fafc'
-    context.font = '16px sans-serif'
+    // В исходной ориентации дверь расположена снизу.
+    context.fillStyle = '#1e293b'
+    context.fillRect(-8, size.y / 2 - 10, 16, 10)
+
+    // Название и счётчик остаются горизонтальными.
+    context.rotate(-angle)
+
+    context.fillStyle = colors.text
     context.textAlign = 'center'
     context.textBaseline = 'middle'
 
-    context.fillText(building.name, position.x + size.x / 2, position.y + size.y / 2)
+    context.font = '16px sans-serif'
+    context.fillText(building.name, 0, -8)
 
-    context.fillStyle = residential ? '#0f172a' : '#f8fafc'
     context.font = 'bold 11px sans-serif'
-    context.textAlign = 'left'
-
-    context.fillText(`×${residentsCount}`, position.x + 10, position.y + 15)
+    context.fillText(`×${residentsCount}`, 0, 14)
   } finally {
     context.restore()
   }

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { createVerticalSliceWorld } from './MapFactory'
 import { BuildingType } from '@/game/domain/Building'
 import { BusState } from '@/game/domain/Bus'
+import { getRoadEndpoints } from '@/game/tools/getRoadEndpoints.ts'
+import { Direction } from '@/game/domain/Direction.ts'
 
 describe('createVerticalSliceWorld', () => {
   it('creates the initial buildings', () => {
@@ -31,20 +33,23 @@ describe('createVerticalSliceWorld', () => {
 
   it('creates the main road', () => {
     const world = createVerticalSliceWorld()
+    const road = world.roads.get('road-main')!
 
     expect(world.roads.size).toBe(1)
-    expect(world.roads.get('road-main')).toMatchObject({
+
+    expect(road).toMatchObject({
+      position: { x: 480, y: 340 },
+      length: 560,
       width: 64,
-      start: {
-        x: 200,
-        y: 340,
-      },
-      end: {
-        x: 760,
-        y: 340,
-      },
+      direction: Direction.East,
+    })
+
+    expect(getRoadEndpoints(road)).toEqual({
+      start: { x: 200, y: 340 },
+      end: { x: 760, y: 340 },
     })
   })
+
   it('creates a bidirectional road graph', () => {
     const world = createVerticalSliceWorld()
 
@@ -89,7 +94,7 @@ describe('createVerticalSliceWorld', () => {
       },
       state: BusState.WaitingAtStop,
       currentStopIndex: 0,
-      direction: 1,
+      routeDirection: 1,
       path: [],
       pathIndex: 0,
       waitingSecondsRemaining: 1,

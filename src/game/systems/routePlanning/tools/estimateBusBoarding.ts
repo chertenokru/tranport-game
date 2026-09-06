@@ -51,7 +51,7 @@ export function estimateBusBoarding(input: BusBoardingInput): BusBoardingEstimat
 
   let elapsedTime = 0
   let stopIndex = bus.currentStopIndex
-  let direction = bus.direction
+  let direction = bus.routeDirection
 
   const getBoardingEstimateAtStop = (
     arrivalTime: number,

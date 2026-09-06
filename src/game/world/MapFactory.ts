@@ -1,12 +1,13 @@
 import { GameWorld } from '@/game/core/GameWorld'
-import { BuildingType, type Building } from '@/game/domain/Building'
+import { type Building, BuildingType } from '@/game/domain/Building'
 import type { BusStop } from '@/game/domain/BusStop'
 import type { Road } from '@/game/domain/Road.ts'
 import type { MapNode } from '@/game/world/MapNode.ts'
 import type { MapEdge } from '@/game/world/MapEdge.ts'
 import type { BusRoute } from '@/game/domain/BusRoute.ts'
-import { BusState, type Bus } from '@/game/domain/Bus.ts'
+import { type Bus, BusState } from '@/game/domain/Bus.ts'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
+import { Direction } from '@/game/domain/Direction.ts'
 
 export function createVerticalSliceWorld(): GameWorld {
   const world = new GameWorld()
@@ -15,36 +16,18 @@ export function createVerticalSliceWorld(): GameWorld {
     id: 'building-house',
     name: 'Жилой дом',
     type: BuildingType.Residential,
-    position: {
-      x: 80,
-      y: 180,
-    },
-    size: {
-      x: 120,
-      y: 100,
-    },
-    entrance: {
-      x: 140,
-      y: 280,
-    },
+    position: { x: 140, y: 230 },
+    size: { x: 120, y: 100 },
+    direction: Direction.South,
   }
 
   const office: Building = {
     id: 'building-office',
     name: 'Офис',
     type: BuildingType.Office,
-    position: {
-      x: 760,
-      y: 180,
-    },
-    entrance: {
-      x: 820,
-      y: 280,
-    },
-    size: {
-      x: 120,
-      y: 100,
-    },
+    position: { x: 820, y: 230 },
+    size: { x: 120, y: 100 },
+    direction: Direction.South,
   }
 
   const houseStop: BusStop = {
@@ -75,15 +58,10 @@ export function createVerticalSliceWorld(): GameWorld {
 
   const mainRoad: Road = {
     id: 'road-main',
-    start: {
-      x: 200,
-      y: 340,
-    },
-    end: {
-      x: 760,
-      y: 340,
-    },
+    position: { x: 480, y: 340 },
+    length: 560,
     width: 64,
+    direction: Direction.East,
   }
 
   const houseStopNode: MapNode = {
@@ -135,7 +113,9 @@ export function createVerticalSliceWorld(): GameWorld {
     },
     state: BusState.WaitingAtStop,
     currentStopIndex: 0,
-    direction: 1,
+    // Автобус возле дома.
+    routeDirection: 1,
+    direction: Direction.East,
     size: standardBusConfig.size,
     path: [],
     pathIndex: 0,
@@ -155,7 +135,9 @@ export function createVerticalSliceWorld(): GameWorld {
     },
     state: BusState.WaitingAtStop,
     currentStopIndex: 1,
-    direction: -1,
+    // Автобус возле офиса.
+    routeDirection: -1,
+    direction: Direction.West,
     size: standardBusConfig.size,
     path: [],
     pathIndex: 0,

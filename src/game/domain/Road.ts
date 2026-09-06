@@ -1,9 +1,16 @@
-import type { Vector2 } from '@/game/domain/geometry.ts'
-import type { RoadId } from '@/game/domain/ids.ts'
+import type { Direction } from './Direction'
+import type { Vector2 } from './geometry'
+import type { RoadId } from './ids'
 
 export interface Road {
   readonly id: RoadId
-  readonly start: Vector2
-  readonly end: Vector2
+
+  // Центр участка.
+  readonly position: Vector2
+
+  readonly length: number
   readonly width: number
+
+  // Направление от начала участка к концу.
+  readonly direction: Direction
 }

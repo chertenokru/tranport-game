@@ -7,6 +7,7 @@ import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportD
 import { chooseTransport } from './tools/chooseTransport.ts'
 import { findBestBusOption } from './tools/findBestBusOption.ts'
 import { getRouteLegDistances } from './tools/getRouteLegDistances.ts'
+import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 interface TransitOption {
   readonly transit: TransitJourney
@@ -31,7 +32,7 @@ export class RoutePlanningSystem implements GameSystem {
     const destination = world.buildings.get(journey.destinationBuildingId)
     if (!destination) return
 
-    const walkingDistance = distanceBetween(resident.position, destination.entrance)
+    const walkingDistance = distanceBetween(resident.position, getBuildingEntrance(destination))
     const walkingTime = walkingDistance / resident.walkingSpeed
     const buses = [...world.buses.values()]
     let bestOption: TransitOption | null = null
@@ -62,7 +63,7 @@ export class RoutePlanningSystem implements GameSystem {
           )
           const walkingFromStopDistance = distanceBetween(
             destinationStop.waitingPosition,
-            destination.entrance,
+            getBuildingEntrance(destination),
           )
           const busOption = findBestBusOption({
             buses,
@@ -116,7 +117,7 @@ export class RoutePlanningSystem implements GameSystem {
     resident.state = useBus ? ResidentState.WalkingToStop : ResidentState.Walking
     resident.path = [
       resident.position,
-      useBus && bestOption ? bestOption.boardingPosition : destination.entrance,
+      useBus && bestOption ? bestOption.boardingPosition : getBuildingEntrance(destination),
     ]
     resident.pathIndex = 1
   }

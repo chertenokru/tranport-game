@@ -5,6 +5,7 @@ import { BusState } from '@/game/domain/Bus'
 import { ResidentState } from '@/game/domain/Resident'
 
 import { PassengerSystem } from './PassengerSystem'
+import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 describe('PassengerSystem', () => {
   it('boards residents up to capacity and sends the rest for replanning', () => {
@@ -66,6 +67,6 @@ describe('PassengerSystem', () => {
     expect(bus.passengerIds).not.toContain(resident.id)
     expect(resident.state).toBe(ResidentState.WalkingFromStop)
     expect(resident.position).toEqual(officeStop.waitingPosition)
-    expect(resident.path.at(-1)).toEqual(destination!.entrance)
+    expect(resident.path.at(-1)).toEqual(getBuildingEntrance(destination!))
   })
 })

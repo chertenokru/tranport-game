@@ -5,13 +5,14 @@ import { ResidentState } from '@/game/domain/Resident.ts'
 import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision.ts'
 
 import { RoutePlanningSystem } from './RoutePlanningSystem.ts'
+import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 describe('RoutePlanningSystem', () => {
   it('chooses stops for the return journey without preassigned transit', () => {
     const world = createWorldWithResident()
     const resident = world.residents.get('resident-main')!
     const office = world.buildings.get('building-office')!
-    resident.position = { ...office.entrance }
+    resident.position = { ...getBuildingEntrance(office) }
     resident.journey = {
       originBuildingId: office.id,
       destinationBuildingId: 'building-house',
@@ -36,7 +37,9 @@ describe('RoutePlanningSystem', () => {
     world.routes.clear()
     new RoutePlanningSystem().update(world, 0)
     expect(resident.state).toBe(ResidentState.Walking)
-    expect(resident.path.at(-1)).toEqual(world.buildings.get('building-office')!.entrance)
+    expect(resident.path.at(-1)).toEqual(
+      getBuildingEntrance(world.buildings.get('building-office')!),
+    )
     expect(resident.journey?.transit).toBeNull()
     expect(resident.transportDecision?.reason).toBe(TransportDecisionReason.TransitUnavailable)
   })
@@ -123,7 +126,7 @@ describe('RoutePlanningSystem', () => {
     system.update(world, 0)
 
     expect(resident.state).toBe(ResidentState.Walking)
-    expect(resident.path.at(-1)).toEqual(destination.entrance)
+    expect(resident.path.at(-1)).toEqual(getBuildingEntrance(destination))
     expect(resident.pathIndex).toBe(1)
     expect(resident.transportDecision).toMatchObject({
       selectedMode: TransportMode.Walking,

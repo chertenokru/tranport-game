@@ -46,6 +46,6 @@ describe('BusMovementSystem', () => {
     system.update(world, 1)
 
     expect(bus.state).toBe(BusState.Moving)
-    expect(bus.direction).toBe(-1)
+    expect(bus.routeDirection).toBe(-1)
   })
 })

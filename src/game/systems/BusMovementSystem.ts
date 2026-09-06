@@ -8,6 +8,7 @@ import type { MapNode, MapNodeId } from '@/game/world/MapNode'
 
 import { findShortestRoadPath } from './tools/findShortestRoadPath.ts'
 import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath.ts'
+import { getDirection } from '@/game/tools/geometry.ts'
 
 export class BusMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
@@ -81,11 +82,11 @@ export class BusMovementSystem implements GameSystem {
       return null
     }
 
-    let nextStopIndex = bus.currentStopIndex + bus.direction
+    let nextStopIndex = bus.currentStopIndex + bus.routeDirection
 
     if (nextStopIndex < 0 || nextStopIndex >= route.stopIds.length) {
-      bus.direction = bus.direction === 1 ? -1 : 1
-      nextStopIndex = bus.currentStopIndex + bus.direction
+      bus.routeDirection = bus.routeDirection === 1 ? -1 : 1
+      nextStopIndex = bus.currentStopIndex + bus.routeDirection
     }
 
     return nextStopIndex
@@ -128,13 +129,21 @@ export class BusMovementSystem implements GameSystem {
     bus.position = movement.position
     bus.pathIndex = movement.pathIndex
 
+    if (movement.heading) {
+      const direction = getDirection(movement.heading)
+
+      if (direction !== null) {
+        bus.direction = direction
+      }
+    }
+
     if (movement.completed) {
       this.finishLeg(bus)
     }
   }
 
   private finishLeg(bus: Bus): void {
-    bus.currentStopIndex += bus.direction
+    bus.currentStopIndex += bus.routeDirection
     bus.state = BusState.WaitingAtStop
     bus.waitingSecondsRemaining = bus.stopWaitSeconds
     bus.path = []
