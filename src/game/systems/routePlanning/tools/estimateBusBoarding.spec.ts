@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { createVerticalSliceWorld } from '@/game/world/MapFactory.ts'
 
 import { estimateBusBoarding } from './estimateBusBoarding.ts'
 

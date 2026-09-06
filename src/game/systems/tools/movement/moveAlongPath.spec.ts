@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { moveAlongPath } from './moveAlongPath'
+import { moveAlongPath } from './moveAlongPath.ts'
 
 const path = [
   { x: 0, y: 0 },

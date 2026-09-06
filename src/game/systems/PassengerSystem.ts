@@ -1,10 +1,10 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import { BusState, type Bus } from '@/game/domain/Bus'
+import { type Bus, BusState } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
 import { ResidentState } from '@/game/domain/Resident'
-import { getRouteDepartureDirection } from '@/game/systems/movement/getRouteDepartureDirection.ts'
+import { getRouteDepartureDirection } from '@/game/systems/tools/movement/getRouteDepartureDirection.ts'
 
 export class PassengerSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {

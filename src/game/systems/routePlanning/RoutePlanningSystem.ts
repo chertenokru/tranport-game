@@ -1,12 +1,12 @@
-import type { GameSystem } from '@/game/core/GameSystem'
-import type { GameWorld } from '@/game/core/GameWorld'
-import { ResidentState, type Resident, type TransitJourney } from '@/game/domain/Resident'
-import type { Vector2 } from '@/game/domain/geometry'
-import type { BusId } from '@/game/domain/ids'
-import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision'
-import { chooseTransport } from './chooseTransport'
-import { findBestBusOption } from './findBestBusOption'
-import { getRouteLegDistances } from './getRouteLegDistances'
+import type { GameSystem } from '@/game/core/GameSystem.ts'
+import type { GameWorld } from '@/game/core/GameWorld.ts'
+import { type Resident, ResidentState, type TransitJourney } from '@/game/domain/Resident.ts'
+import type { Vector2 } from '@/game/domain/geometry.ts'
+import type { BusId } from '@/game/domain/ids.ts'
+import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision.ts'
+import { chooseTransport } from './tools/chooseTransport.ts'
+import { findBestBusOption } from './tools/findBestBusOption.ts'
+import { getRouteLegDistances } from './tools/getRouteLegDistances.ts'
 
 interface TransitOption {
   readonly transit: TransitJourney

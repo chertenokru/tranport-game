@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { calculateRemainingPathDistance } from './calculateRemainingPathDistance'
+import { calculateRemainingPathDistance } from './calculateRemainingPathDistance.ts'
 
 describe('calculateRemainingPathDistance', () => {
   it('includes the unfinished segment and subsequent path segments', () => {

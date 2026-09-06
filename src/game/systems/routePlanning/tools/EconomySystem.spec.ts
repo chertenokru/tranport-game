@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { EconomySystem } from '@/game/systems/EconomySystem.ts'
-import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
+import { createWorldWithResident } from '@/game/testing/createWorldWithResident.ts'
 import { GAME_CONFIG } from '@/game/config/game.config.ts'
-import { ResidentState } from '@/game/domain/Resident'
+import { ResidentState } from '@/game/domain/Resident.ts'
 
 describe('createWorldWithResident', () => {
   it('rewards a completed journey exactly once', () => {

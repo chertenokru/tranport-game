@@ -1,8 +1,8 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import { ResidentState, type Resident } from '@/game/domain/Resident'
+import { type Resident, ResidentState } from '@/game/domain/Resident'
 
-import { moveAlongPath } from './movement/moveAlongPath'
+import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath'
 
 const MOVING_STATES: ReadonlySet<ResidentState> = new Set([
   ResidentState.Walking,

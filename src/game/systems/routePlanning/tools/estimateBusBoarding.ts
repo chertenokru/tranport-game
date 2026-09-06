@@ -1,7 +1,7 @@
-import { BusState, type Bus } from '@/game/domain/Bus'
+import { type Bus, BusState } from '@/game/domain/Bus.ts'
 
-import { calculateRemainingPathDistance } from './movement/calculateRemainingPathDistance'
-import { getRouteDepartureDirection } from '@/game/systems/movement/getRouteDepartureDirection.ts'
+import { calculateRemainingPathDistance } from '@/game/systems/tools/movement/calculateRemainingPathDistance.ts'
+import { getRouteDepartureDirection } from '@/game/systems/tools/movement/getRouteDepartureDirection.ts'
 
 export interface BusBoardingInput {
   readonly bus: Bus

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { createVerticalSliceWorld } from '@/game/world/MapFactory'
+import { createVerticalSliceWorld } from '@/game/world/MapFactory.ts'
 
-import { getRouteLegDistances } from './getRouteLegDistances'
+import { getRouteLegDistances } from './getRouteLegDistances.ts'
 
 describe('getRouteLegDistances', () => {
   it('calculates distances through the road graph', () => {

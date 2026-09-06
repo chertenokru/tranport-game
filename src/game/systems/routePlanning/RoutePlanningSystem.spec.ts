@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
-import { ResidentState } from '@/game/domain/Resident'
-import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision'
+import { createWorldWithResident } from '@/game/testing/createWorldWithResident.ts'
+import { ResidentState } from '@/game/domain/Resident.ts'
+import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision.ts'
 
-import { RoutePlanningSystem } from './RoutePlanningSystem'
+import { RoutePlanningSystem } from './RoutePlanningSystem.ts'
 
 describe('RoutePlanningSystem', () => {
   it('chooses stops for the return journey without preassigned transit', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { chooseTransport, type TransportChoiceInput } from './chooseTransport'
-import { TransportMode } from '@/game/domain/TransportDecision'
+import { chooseTransport, type TransportChoiceInput } from './chooseTransport.ts'
+import { TransportMode } from '@/game/domain/TransportDecision.ts'
 
 const baseInput: TransportChoiceInput = {
   walkingDistance: 680,

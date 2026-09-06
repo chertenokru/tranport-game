@@ -1,9 +1,9 @@
-import type { GameWorld } from '@/game/core/GameWorld'
-import type { BusRoute } from '@/game/domain/BusRoute'
-import type { BusStopId } from '@/game/domain/ids'
-import type { MapNode } from '@/game/world/MapNode'
+import type { GameWorld } from '@/game/core/GameWorld.ts'
+import type { BusRoute } from '@/game/domain/BusRoute.ts'
+import type { BusStopId } from '@/game/domain/ids.ts'
+import type { MapNode } from '@/game/world/MapNode.ts'
 
-import { findShortestRoadPath } from './findShortestRoadPath'
+import { findShortestRoadPath } from '../../tools/findShortestRoadPath.ts'
 
 export function getRouteLegDistances(world: GameWorld, route: BusRoute): readonly number[] | null {
   const distances: number[] = []

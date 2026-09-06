@@ -1,4 +1,4 @@
-import type { Vector2 } from '@/game/domain/geometry'
+import type { Vector2 } from '@/game/domain/geometry.ts'
 
 export interface MoveAlongPathInput {
   readonly position: Vector2

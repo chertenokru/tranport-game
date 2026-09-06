@@ -1,4 +1,4 @@
-import type { Vector2 } from '@/game/domain/geometry'
+import type { Vector2 } from '@/game/domain/geometry.ts'
 
 export interface RemainingPathDistanceInput {
   readonly position: Vector2

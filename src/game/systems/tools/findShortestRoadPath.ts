@@ -1,5 +1,5 @@
-import type { GameWorld } from '@/game/core/GameWorld'
-import type { MapNodeId } from '@/game/world/MapNode'
+import type { GameWorld } from '@/game/core/GameWorld.ts'
+import type { MapNodeId } from '@/game/world/MapNode.ts'
 
 export function findShortestRoadPath(
   world: GameWorld,

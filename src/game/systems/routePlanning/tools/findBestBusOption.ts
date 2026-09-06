@@ -1,5 +1,5 @@
-import { BusState, type Bus } from '@/game/domain/Bus'
-import type { BusId, RouteId } from '@/game/domain/ids'
+import { type Bus, BusState } from '@/game/domain/Bus.ts'
+import type { BusId, RouteId } from '@/game/domain/ids.ts'
 
 import { estimateBusBoarding } from './estimateBusBoarding.ts'
 

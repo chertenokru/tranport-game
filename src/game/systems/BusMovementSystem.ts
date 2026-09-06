@@ -1,13 +1,13 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import { BusState, type Bus } from '@/game/domain/Bus'
+import { type Bus, BusState } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
 import type { Vector2 } from '@/game/domain/geometry'
 import type { MapNode, MapNodeId } from '@/game/world/MapNode'
 
-import { findShortestRoadPath } from './findShortestRoadPath'
-import { moveAlongPath } from '@/game/systems/movement/moveAlongPath.ts'
+import { findShortestRoadPath } from './tools/findShortestRoadPath.ts'
+import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath.ts'
 
 export class BusMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
