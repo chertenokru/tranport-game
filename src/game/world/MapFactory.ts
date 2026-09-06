@@ -149,7 +149,7 @@ export function createVerticalSliceWorld(): GameWorld {
     speed: standardBusConfig.speed,
     capacity: standardBusConfig.capacity,
     passengerIds: [],
-    stopWaitSeconds: standardBusConfig.stopWaitSeconds,
+    stopWaitSeconds: standardBusConfig.stopWaitSeconds * 2,
     position: {
       ...officeStop.vehiclePosition,
     },

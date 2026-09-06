@@ -5,7 +5,7 @@ import { createWorldWithResident } from '@/game/testing/createWorldWithResident'
 import { PassengerSystem } from './PassengerSystem'
 
 describe('PassengerSystem', () => {
-  it('keeps the rest of a group waiting when the bus fills, then boards them on its next visit', () => {
+  it('boards residents up to capacity and sends the rest for replanning', () => {
     const world = createWorldWithResident()
     const system = new PassengerSystem()
     const first = world.residents.get('resident-main')!
@@ -21,19 +21,10 @@ describe('PassengerSystem', () => {
 
     system.update(world, 0)
     expect(bus.passengerIds).toEqual([first.id, second.id])
-    expect(third.state).toBe('waitingBus')
+    expect(third.state).toBe('choosingTransport')
     system.update(world, 0)
     expect(bus.passengerIds).toHaveLength(2)
-
-    bus.currentStopIndex = 1
-    system.update(world, 0)
-    expect(bus.passengerIds).toEqual([])
-    expect(first.state).toBe('walkingFromStop')
-    expect(second.state).toBe('walkingFromStop')
-    bus.currentStopIndex = 0
-    system.update(world, 0)
-    expect(bus.passengerIds).toEqual([third.id])
-    expect(third.state).toBe('insideBus')
+    expect(bus.passengerIds).not.toContain(third.id)
   })
 
   it('boards and drops off a passenger', () => {
