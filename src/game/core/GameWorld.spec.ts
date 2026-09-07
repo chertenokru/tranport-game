@@ -14,6 +14,7 @@ describe('GameWorld', () => {
     expect(world.buildings.size).toBe(0)
     expect(world.stops.size).toBe(0)
     expect(world.routes.size).toBe(0)
+    expect(world.crossings.size).toBe(0)
   })
 
   it('resets runtime state', () => {
@@ -22,6 +23,8 @@ describe('GameWorld', () => {
     world.money = 50
     world.deliveredPassengers = 12
     world.accidents = 3
+    world.crossingOccupants.set('crossing', new Set(['resident']))
+    world.trafficZoneOwners.set('crossing', 'bus')
 
     world.reset()
 
@@ -29,5 +32,7 @@ describe('GameWorld', () => {
     expect(world.deliveredPassengers).toBe(0)
     expect(world.accidents).toBe(0)
     expect(world.buses.size).toBe(0)
+    expect(world.crossingOccupants.size).toBe(0)
+    expect(world.trafficZoneOwners.size).toBe(0)
   })
 })

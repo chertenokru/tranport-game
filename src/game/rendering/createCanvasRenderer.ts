@@ -18,7 +18,7 @@ import { drawDebugInformation } from '@/game/rendering/drawsLayers/drawDebugInfo
 import { DecisionIndicators } from './tools/DecisionIndicators'
 import { groupVisibleResidents } from './tools/groupVisibleResidents'
 import { drawIntersection } from '@/game/rendering/drawsLayers/drawIntersection.ts'
-import { drawPedestrianCrossing } from '@/game/rendering/drawsLayers/drawPedestrianCrossing.ts'
+import { drawPedestrianCrossing } from '@/game/rendering/drawsLayers/drawPedestrianCrossing'
 
 export interface CanvasGameRenderer extends GameRenderer {
   addLayer(layer: CanvasLayer): () => void
@@ -54,8 +54,8 @@ export function createCanvasRenderer(canvas: HTMLCanvasElement): CanvasGameRende
   })
 
   renderer.addLayer(({ context }) => {
-    for (const pedestrianCrossing of getWorld().crossings.values()) {
-      drawPedestrianCrossing(context, pedestrianCrossing)
+    for (const crossing of getWorld().crossings.values()) {
+      drawPedestrianCrossing(context, crossing)
     }
   })
 

@@ -6,6 +6,8 @@ import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportD
 
 import { RoutePlanningSystem } from './RoutePlanningSystem.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+import { createIShapedWorld } from '@/game/world/createIShapedWorld'
+import { createResident } from '@/game/world/createResident'
 
 // Времена в тестах жизненного цикла рассчитаны на скорость 40.
 // Изменения игрового баланса не должны менять условия этих тестов.
@@ -25,6 +27,38 @@ vi.mock('@/game/config/pedestrians.config', async (importOriginal) => {
 })
 
 describe('RoutePlanningSystem', () => {
+  it('stores pedestrian crossings in the selected walking route', () => {
+    const world = createIShapedWorld()
+    const origin = world.buildings.get('building-upper-house')!
+    const destination = world.buildings.get('building-lower-office')!
+    const resident = createResident('pedestrian', origin)
+    resident.currentBuildingId = null
+    resident.journey = {
+      originBuildingId: origin.id,
+      destinationBuildingId: destination.id,
+      transit: null,
+    }
+    resident.state = ResidentState.ChoosingTransport
+    world.residents.set(resident.id, resident)
+    world.buses.clear()
+    world.routes.clear()
+
+    new RoutePlanningSystem().update(world, 0)
+
+    expect(resident.state).toBe(ResidentState.Walking)
+    expect(resident.path.flatMap((point) => point.crossingId ?? [])).toEqual([
+      'crossing-upper-left',
+      'crossing-middle',
+      'crossing-lower-right',
+    ])
+    expect(resident.transportDecision?.walkingTime).toBeGreaterThan(
+      Math.hypot(
+        getBuildingEntrance(destination).x - getBuildingEntrance(origin).x,
+        getBuildingEntrance(destination).y - getBuildingEntrance(origin).y,
+      ) / resident.walkingSpeed,
+    )
+  })
+
   it('chooses stops for the return journey without preassigned transit', () => {
     const world = createWorldWithResident()
     const resident = world.residents.get('resident-main')!

@@ -14,15 +14,14 @@ export function drawPedestrianCrossing(
     context.translate(position.x, position.y)
     context.rotate(getDirectionAngle(direction))
 
+    context.strokeStyle = '#f8fafc'
+    context.lineWidth = 2
+    context.lineCap = 'butt'
+    context.setLineDash([])
     context.beginPath()
-    for (let i = -width - 4; i <= width + 4; i = i + 4) {
+    for (let i = -width - 4; i <= width + 4; i += 4) {
       context.moveTo(i, -halfSize)
       context.lineTo(i, halfSize)
-      context.strokeStyle = '#f8fafc'
-      context.lineWidth = 2
-      context.lineCap = 'butt'
-      context.setLineDash([])
-      context.stroke()
     }
     context.stroke()
   } finally {

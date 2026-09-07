@@ -45,7 +45,7 @@ export function moveAlongPath({
     const distance = Math.hypot(offsetX, offsetY)
 
     if (distance === 0) {
-      currentPosition = target
+      currentPosition = { x: target.x, y: target.y }
       currentPathIndex++
       continue
     }
@@ -68,7 +68,7 @@ export function moveAlongPath({
       break
     }
 
-    currentPosition = target
+    currentPosition = { x: target.x, y: target.y }
     currentPathIndex++
     remainingDistance -= distance
   }
