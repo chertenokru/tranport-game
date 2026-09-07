@@ -16,6 +16,7 @@ import { drawDebugInformation } from '@/game/rendering/drawsLayers/drawDebugInfo
 
 import { DecisionIndicators } from './tools/DecisionIndicators'
 import { groupVisibleResidents } from './tools/groupVisibleResidents'
+import { drawIntersection } from '@/game/rendering/drawsLayers/drawIntersection.ts'
 
 export interface CanvasGameRenderer extends GameRenderer {
   addLayer(layer: CanvasLayer): () => void
@@ -41,6 +42,12 @@ export function createCanvasRenderer(canvas: HTMLCanvasElement): CanvasGameRende
   renderer.addLayer(({ context }) => {
     for (const road of getWorld().roads.values()) {
       drawRoad(context, road)
+    }
+  })
+
+  renderer.addLayer(({ context }) => {
+    for (const intersection of getWorld().intersections.values()) {
+      drawIntersection(context, intersection)
     }
   })
 

@@ -53,8 +53,8 @@ describe('createVerticalSliceWorld', () => {
   it('creates a bidirectional road graph', () => {
     const world = createVerticalSliceWorld()
 
-    expect(world.roadNodes.size).toBe(2)
-    expect(world.roadEdges.size).toBe(2)
+    expect(world.roadNodes.size).toBe(4)
+    expect(world.roadEdges.size).toBe(6)
 
     expect(world.roadEdges.get('edge-house-office')).toMatchObject({
       from: 'node-stop-house',
@@ -70,14 +70,20 @@ describe('createVerticalSliceWorld', () => {
   })
   it('creates the initial bus route', () => {
     const world = createVerticalSliceWorld()
+    const route = world.routes.get('route-main')!
 
     expect(world.routes.size).toBe(1)
 
-    expect(world.routes.get('route-main')).toEqual({
+    expect(route).toMatchObject({
       id: 'route-main',
       name: 'Маршрут 1',
-      stopIds: ['stop-house', 'stop-office'],
     })
+
+    expect(route.legs.map((leg) => [leg.fromStopId, leg.toStopId])).toEqual([
+      ['stop-house', 'stop-office'],
+      ['stop-office', 'stop-house'],
+    ])
+    expect(route.legs.reduce((sum, leg) => sum + leg.distance, 0)).toBe(1120)
   })
 
   it('creates the initial bus at the house stop', () => {
@@ -93,9 +99,7 @@ describe('createVerticalSliceWorld', () => {
         y: 340,
       },
       state: BusState.WaitingAtStop,
-      currentStopIndex: 0,
-      routeDirection: 1,
-      path: [],
+      legIndex: 0,
       pathIndex: 0,
       waitingSecondsRemaining: 1,
     })

@@ -6,7 +6,6 @@ import type { BusId } from '@/game/domain/ids.ts'
 import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision.ts'
 import { chooseTransport } from './tools/chooseTransport.ts'
 import { findBestBusOption } from './tools/findBestBusOption.ts'
-import { getRouteLegDistances } from './tools/getRouteLegDistances.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 interface TransitOption {
@@ -40,21 +39,16 @@ export class RoutePlanningSystem implements GameSystem {
 
     // The destination belongs to the resident; stops and a bus route are chosen here.
     for (const route of world.routes.values()) {
-      const legDistances = getRouteLegDistances(world, route)
-      if (!legDistances) continue
+      if (route.legs.length < 2) continue
 
-      for (let boardingIndex = 0; boardingIndex < route.stopIds.length; boardingIndex++) {
-        const boardingStop = world.stops.get(route.stopIds[boardingIndex]!)
+      for (let boardingIndex = 0; boardingIndex < route.legs.length; boardingIndex++) {
+        const boardingStop = world.stops.get(route.legs[boardingIndex]!.fromStopId)
         if (!boardingStop) continue
 
-        for (
-          let destinationIndex = 0;
-          destinationIndex < route.stopIds.length;
-          destinationIndex++
-        ) {
+        for (let destinationIndex = 0; destinationIndex < route.legs.length; destinationIndex++) {
           if (boardingIndex === destinationIndex) continue
-          const destinationStop = world.stops.get(route.stopIds[destinationIndex]!)
-          if (!destinationStop) continue
+          const destinationStop = world.stops.get(route.legs[destinationIndex]!.fromStopId)
+          if (!destinationStop || destinationStop.id === boardingStop.id) continue
 
           unavailableReason = TransportDecisionReason.NoBusAvailable
           const walkingToStopDistance = distanceBetween(
@@ -67,11 +61,10 @@ export class RoutePlanningSystem implements GameSystem {
           )
           const busOption = findBestBusOption({
             buses,
-            routeId: route.id,
-            boardingStopIndex: boardingIndex,
-            destinationStopIndex: destinationIndex,
+            route,
+            boardingLegIndex: boardingIndex,
+            destinationLegIndex: destinationIndex,
             passengerArrivalTime: walkingToStopDistance / resident.walkingSpeed,
-            legDistances,
           })
           if (!busOption) continue
 
@@ -91,6 +84,8 @@ export class RoutePlanningSystem implements GameSystem {
                 routeId: route.id,
                 boardingStopId: boardingStop.id,
                 destinationStopId: destinationStop.id,
+                boardingLegIndex: boardingIndex,
+                destinationLegIndex: destinationIndex,
               },
               boardingPosition: boardingStop.waitingPosition,
               busId: busOption.busId,

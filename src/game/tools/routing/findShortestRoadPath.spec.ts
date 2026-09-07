@@ -1,4 +1,4 @@
-import { findShortestRoadPath } from '@/game/systems/tools/findShortestRoadPath.ts'
+import { findShortestRoadPath } from '@/game/tools/routing/findShortestRoadPath.ts'
 import { GameWorld } from '@/game/core/GameWorld.ts'
 import { describe, expect, it } from 'vitest'
 import { createVerticalSliceWorld } from '@/game/world/MapFactory.ts'

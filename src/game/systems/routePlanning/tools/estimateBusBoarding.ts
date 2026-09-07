@@ -1,15 +1,12 @@
-import { type Bus, BusState } from '@/game/domain/Bus.ts'
-
-import { calculateRemainingPathDistance } from '@/game/systems/tools/movement/calculateRemainingPathDistance.ts'
-import { getRouteDepartureDirection } from '@/game/systems/tools/movement/getRouteDepartureDirection.ts'
+import { type Bus, BusState } from '@/game/domain/Bus'
+import type { BusRoute } from '@/game/domain/BusRoute'
+import { calculateRemainingPathDistance } from '@/game/systems/tools/movement/calculateRemainingPathDistance'
 
 export interface BusBoardingInput {
   readonly bus: Bus
-  readonly routeStopCount: number
-  readonly boardingStopIndex: number
-  readonly destinationStopIndex: number
+  readonly route: BusRoute
+  readonly boardingLegIndex: number
   readonly passengerArrivalTime: number
-  readonly legDistances: readonly number[]
 }
 
 export interface BusBoardingEstimate {
@@ -17,128 +14,69 @@ export interface BusBoardingEstimate {
   readonly remainingStopTime: number
 }
 
-export function estimateBusBoarding(input: BusBoardingInput): BusBoardingEstimate | null {
-  const {
-    bus,
-    routeStopCount,
-    boardingStopIndex,
-    destinationStopIndex,
-    passengerArrivalTime,
-    legDistances,
-  } = input
-
+export function estimateBusBoarding({
+  bus,
+  route,
+  boardingLegIndex,
+  passengerArrivalTime,
+}: BusBoardingInput): BusBoardingEstimate | null {
+  const count = route.legs.length
   if (
-    routeStopCount < 2 ||
-    legDistances.length !== routeStopCount - 1 ||
-    boardingStopIndex < 0 ||
-    boardingStopIndex >= routeStopCount ||
-    destinationStopIndex < 0 ||
-    destinationStopIndex >= routeStopCount ||
+    count < 2 ||
+    bus.routeId !== route.id ||
+    !Number.isInteger(bus.legIndex) ||
+    !route.legs[bus.legIndex] ||
+    !Number.isInteger(boardingLegIndex) ||
+    !route.legs[boardingLegIndex] ||
+    !Number.isFinite(passengerArrivalTime) ||
     passengerArrivalTime < 0 ||
-    bus.speed <= 0
+    !Number.isFinite(bus.speed) ||
+    bus.speed <= 0 ||
+    !Number.isFinite(bus.stopWaitSeconds) ||
+    bus.stopWaitSeconds < 0 ||
+    !Number.isFinite(bus.waitingSecondsRemaining) ||
+    bus.waitingSecondsRemaining < 0 ||
+    route.legs.some((leg) => !Number.isFinite(leg.distance) || leg.distance < 0)
   ) {
     throw new RangeError('Invalid bus waiting time input')
   }
 
-  const roundTripDistance = legDistances.reduce((total, distance) => total + distance, 0) * 2
+  const cycleTime =
+    route.legs.reduce((sum, leg) => sum + leg.distance, 0) / bus.speed + count * bus.stopWaitSeconds
+  if (cycleTime <= 0) return null
 
-  const roundTripTime =
-    roundTripDistance / bus.speed + bus.stopWaitSeconds * (routeStopCount - 1) * 2
+  let legIndex = bus.legIndex
+  let arrivalTime = 0
+  let stopTime = bus.waitingSecondsRemaining
 
-  if (roundTripTime <= 0) {
-    return null
-  }
-
-  let elapsedTime = 0
-  let stopIndex = bus.currentStopIndex
-  let direction = bus.routeDirection
-
-  const getBoardingEstimateAtStop = (
-    arrivalTime: number,
-    departureTime: number,
-  ): BusBoardingEstimate | null => {
-    if (stopIndex !== boardingStopIndex) {
-      return null
-    }
-
-    const departureDirection = getRouteDepartureDirection(stopIndex, direction, routeStopCount)
-
-    const destinationIsAhead = (destinationStopIndex - boardingStopIndex) * departureDirection > 0
-
-    if (!destinationIsAhead || passengerArrivalTime > departureTime) {
-      return null
-    }
-
-    const boardingTime = Math.max(passengerArrivalTime, arrivalTime)
-
-    return {
-      waitingTime: boardingTime - passengerArrivalTime,
-      remainingStopTime: departureTime - boardingTime,
-    }
-  }
-
-  if (bus.state === BusState.WaitingAtStop) {
-    const boardingEstimate = getBoardingEstimateAtStop(0, bus.waitingSecondsRemaining)
-
-    if (boardingEstimate) {
-      return boardingEstimate
-    }
-
-    elapsedTime = bus.waitingSecondsRemaining
-  } else {
-    const nextStopIndex = stopIndex + direction
-
-    if (nextStopIndex < 0 || nextStopIndex >= routeStopCount) {
-      return null
-    }
-
-    elapsedTime =
+  if (bus.state === BusState.Moving) {
+    arrivalTime =
       calculateRemainingPathDistance({
         position: bus.position,
-        path: bus.path,
+        path: route.legs[legIndex]!.path,
         pathIndex: bus.pathIndex,
       }) / bus.speed
-
-    stopIndex = nextStopIndex
-
-    const boardingEstimate = getBoardingEstimateAtStop(
-      elapsedTime,
-      elapsedTime + bus.stopWaitSeconds,
-    )
-
-    if (boardingEstimate) {
-      return boardingEstimate
-    }
-
-    elapsedTime += bus.stopWaitSeconds
+    legIndex = (legIndex + 1) % count
+    stopTime = bus.stopWaitSeconds
   }
 
-  const forecastEndTime = passengerArrivalTime + roundTripTime
-
-  while (elapsedTime <= forecastEndTime) {
-    direction = getRouteDepartureDirection(stopIndex, direction, routeStopCount)
-
-    const nextStopIndex = stopIndex + direction
-    const legDistance = legDistances[Math.min(stopIndex, nextStopIndex)]
-
-    if (legDistance === undefined) {
-      return null
-    }
-
-    elapsedTime += legDistance / bus.speed
-    stopIndex = nextStopIndex
-
-    const boardingEstimate = getBoardingEstimateAtStop(
-      elapsedTime,
-      elapsedTime + bus.stopWaitSeconds,
-    )
-
-    if (boardingEstimate) {
-      return boardingEstimate
-    }
-
-    elapsedTime += bus.stopWaitSeconds
+  // ?? ??????? ????????? ????????? ? ?? ?????? ?????? ?????.
+  while (legIndex !== boardingLegIndex) {
+    arrivalTime += stopTime + route.legs[legIndex]!.distance / bus.speed
+    legIndex = (legIndex + 1) % count
+    stopTime = bus.stopWaitSeconds
   }
 
-  return null
+  let departureTime = arrivalTime + stopTime
+  if (passengerArrivalTime > departureTime) {
+    const cycles = Math.ceil((passengerArrivalTime - departureTime) / cycleTime)
+    departureTime += cycles * cycleTime
+    arrivalTime = departureTime - bus.stopWaitSeconds
+  }
+
+  const boardingTime = Math.max(passengerArrivalTime, arrivalTime)
+  return {
+    waitingTime: boardingTime - passengerArrivalTime,
+    remainingStopTime: departureTime - boardingTime,
+  }
 }

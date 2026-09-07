@@ -19,10 +19,9 @@ export interface Bus {
 
   position: Vector2
   state: BusState
-  currentStopIndex: number
-  routeDirection: 1 | -1
+  // У остановившегося автобуса это следующий участок, у движущегося — текущий.
+  legIndex: number
   direction: Direction
-  path: readonly Vector2[]
   pathIndex: number
   waitingSecondsRemaining: number
 }

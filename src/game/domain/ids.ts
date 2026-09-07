@@ -4,3 +4,4 @@ export type RoadId = string
 export type RouteId = string
 export type BusId = string
 export type ResidentId = string
+export type IntersectionId = string

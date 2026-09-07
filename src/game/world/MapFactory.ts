@@ -4,10 +4,11 @@ import type { BusStop } from '@/game/domain/BusStop'
 import type { Road } from '@/game/domain/Road.ts'
 import type { MapNode } from '@/game/world/MapNode.ts'
 import type { MapEdge } from '@/game/world/MapEdge.ts'
-import type { BusRoute } from '@/game/domain/BusRoute.ts'
-import { type Bus, BusState } from '@/game/domain/Bus.ts'
+import { createShuttleRoute } from '@/game/tools/routing/createShuttleRoute'
+import { createBus } from './createBus'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
 import { Direction } from '@/game/domain/Direction.ts'
+import { connectNodes } from '@/game/world/connectNodes.ts'
 
 export function createVerticalSliceWorld(): GameWorld {
   const world = new GameWorld()
@@ -33,27 +34,17 @@ export function createVerticalSliceWorld(): GameWorld {
   const houseStop: BusStop = {
     id: 'stop-house',
     name: 'Жилой квартал',
-    vehiclePosition: {
-      x: 260,
-      y: 340,
-    },
-    waitingPosition: {
-      x: 260,
-      y: 296,
-    },
+    direction: Direction.South,
+    vehiclePosition: { x: 260, y: 340 },
+    waitingPosition: { x: 260, y: 296 },
   }
 
   const officeStop: BusStop = {
     id: 'stop-office',
     name: 'Деловой центр',
-    vehiclePosition: {
-      x: 700,
-      y: 340,
-    },
-    waitingPosition: {
-      x: 700,
-      y: 296,
-    },
+    direction: Direction.South,
+    vehiclePosition: { x: 700, y: 340 },
+    waitingPosition: { x: 700, y: 296 },
   }
 
   const mainRoad: Road = {
@@ -92,58 +83,6 @@ export function createVerticalSliceWorld(): GameWorld {
     traversalCost: 440,
   }
 
-  const mainRoute: BusRoute = {
-    id: 'route-main',
-    name: 'Маршрут 1',
-    stopIds: [houseStop.id, officeStop.id],
-  }
-
-  const standardBusConfig = VEHICLES_CONFIG.standardBus
-
-  const initialBus: Bus = {
-    id: 'bus-main',
-    vehicleTypeId: standardBusConfig.id,
-    routeId: mainRoute.id,
-    speed: standardBusConfig.speed,
-    capacity: standardBusConfig.capacity,
-    passengerIds: [],
-    stopWaitSeconds: standardBusConfig.stopWaitSeconds,
-    position: {
-      ...houseStop.vehiclePosition,
-    },
-    state: BusState.WaitingAtStop,
-    currentStopIndex: 0,
-    // Автобус возле дома.
-    routeDirection: 1,
-    direction: Direction.East,
-    size: standardBusConfig.size,
-    path: [],
-    pathIndex: 0,
-    waitingSecondsRemaining: standardBusConfig.stopWaitSeconds,
-  }
-
-  const initialBus1: Bus = {
-    id: 'bus-main1',
-    vehicleTypeId: standardBusConfig.id,
-    routeId: mainRoute.id,
-    speed: standardBusConfig.speed,
-    capacity: standardBusConfig.capacity,
-    passengerIds: [],
-    stopWaitSeconds: standardBusConfig.stopWaitSeconds * 2,
-    position: {
-      ...officeStop.vehiclePosition,
-    },
-    state: BusState.WaitingAtStop,
-    currentStopIndex: 1,
-    // Автобус возле офиса.
-    routeDirection: -1,
-    direction: Direction.West,
-    size: standardBusConfig.size,
-    path: [],
-    pathIndex: 0,
-    waitingSecondsRemaining: standardBusConfig.stopWaitSeconds,
-  }
-
   world.buildings.set(house.id, house)
   world.buildings.set(office.id, office)
 
@@ -156,6 +95,66 @@ export function createVerticalSliceWorld(): GameWorld {
 
   world.roadEdges.set(houseToOfficeEdge.id, houseToOfficeEdge)
   world.roadEdges.set(officeToHouseEdge.id, officeToHouseEdge)
+
+  for (const terminal of [
+    {
+      id: 'turnaround-house',
+      position: { x: 200, y: 340 },
+      side: Direction.East,
+      neighborId: houseStopNode.id,
+    },
+    {
+      id: 'turnaround-office',
+      position: { x: 760, y: 340 },
+      side: Direction.West,
+      neighborId: officeStopNode.id,
+    },
+  ]) {
+    const nodeId = `node-${terminal.id}`
+
+    world.intersections.set(terminal.id, {
+      id: terminal.id,
+      position: terminal.position,
+      size: mainRoad.width,
+      direction: terminal.side,
+      connections: new Map([[terminal.side, terminal.neighborId]]),
+      movements: new Map([[terminal.side, new Set([terminal.side])]]),
+    })
+
+    world.roadNodes.set(nodeId, {
+      id: nodeId,
+      position: terminal.position,
+      intersectionId: terminal.id,
+    })
+
+    connectNodes(world, terminal.neighborId, nodeId, {
+      intersectionId: terminal.id,
+    })
+
+    connectNodes(world, nodeId, terminal.neighborId, {
+      intersectionId: terminal.id,
+    })
+  }
+
+  const mainRoute = createShuttleRoute(world, {
+    id: 'route-main',
+    name: 'Маршрут 1',
+    stopIds: [houseStop.id, officeStop.id],
+  })
+
+  const standardBusConfig = VEHICLES_CONFIG.standardBus
+
+  const initialBus = createBus(mainRoute, 'bus-main', standardBusConfig)
+  const initialBus1 = createBus(
+    mainRoute,
+    'bus-main1',
+    {
+      ...standardBusConfig,
+      stopWaitSeconds: standardBusConfig.stopWaitSeconds * 2,
+    },
+    1,
+  )
+  initialBus1.waitingSecondsRemaining = standardBusConfig.stopWaitSeconds
 
   world.routes.set(mainRoute.id, mainRoute)
 

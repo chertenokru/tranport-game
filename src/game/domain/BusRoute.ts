@@ -1,7 +1,8 @@
-import type { BusStopId, RouteId } from './ids'
+import type { RouteId } from './ids'
+import type { RouteLeg } from './RouteLeg'
 
 export interface BusRoute {
   readonly id: RouteId
   readonly name: string
-  readonly stopIds: readonly BusStopId[]
+  readonly legs: readonly RouteLeg[]
 }

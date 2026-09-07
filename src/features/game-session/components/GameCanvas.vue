@@ -31,7 +31,7 @@ onUnmounted(() => {
 
 <template>
   <div class="game-canvas-container">
-    <canvas ref="canvas" aria-label="Карта города" class="game-canvas" height="540" width="960" />
+    <canvas ref="canvas" aria-label="Карта города" class="game-canvas" height="720" width="960" />
   </div>
 </template>
 
@@ -49,9 +49,9 @@ onUnmounted(() => {
   display: block;
   width: min(100%, 960px);
   height: auto;
-  aspect-ratio: 16 / 9;
   background: #dbeafe;
   border: 1px solid #94a3b8;
   border-radius: 0.5rem;
+  aspect-ratio: 4 / 3;
 }
 </style>

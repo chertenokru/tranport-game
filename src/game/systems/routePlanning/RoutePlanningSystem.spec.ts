@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createWorldWithResident } from '@/game/testing/createWorldWithResident.ts'
 import { ResidentState } from '@/game/domain/Resident.ts'
@@ -6,6 +6,23 @@ import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportD
 
 import { RoutePlanningSystem } from './RoutePlanningSystem.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+
+// Времена в тестах жизненного цикла рассчитаны на скорость 40.
+// Изменения игрового баланса не должны менять условия этих тестов.
+vi.mock('@/game/config/pedestrians.config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/game/config/pedestrians.config')>()
+
+  return {
+    ...actual,
+    PEDESTRIANS_CONFIG: {
+      ...actual.PEDESTRIANS_CONFIG,
+      default: {
+        ...actual.PEDESTRIANS_CONFIG.default,
+        busTimeAdvantageFactor: 1.0,
+      },
+    },
+  }
+})
 
 describe('RoutePlanningSystem', () => {
   it('chooses stops for the return journey without preassigned transit', () => {
@@ -20,15 +37,40 @@ describe('RoutePlanningSystem', () => {
     }
     world.buses.delete('bus-main')
     const bus = world.buses.get('bus-main1')!
-    bus.waitingSecondsRemaining = 4
+    // Житель должен успеть к автобусу; тест проверяет выбор обратного маршрута.
+    bus.waitingSecondsRemaining = 8
     new RoutePlanningSystem().update(world, 0)
     expect(resident.state).toBe(ResidentState.WalkingToStop)
     expect(resident.journey.transit).toEqual({
       routeId: 'route-main',
       boardingStopId: 'stop-office',
       destinationStopId: 'stop-house',
+      boardingLegIndex: 1,
+      destinationLegIndex: 0,
     })
     expect(resident.transportDecision?.evaluatedBusId).toBe(bus.id)
+  })
+
+  it('accounts for terminal detours when comparing a missed return bus with walking', () => {
+    const world = createWorldWithResident()
+    const resident = world.residents.get('resident-main')!
+    const office = world.buildings.get('building-office')!
+    resident.position = { ...getBuildingEntrance(office) }
+    resident.journey = {
+      originBuildingId: office.id,
+      destinationBuildingId: 'building-house',
+      transit: null,
+    }
+    world.buses.delete('bus-main')
+    world.buses.get('bus-main1')!.waitingSecondsRemaining = 4
+
+    new RoutePlanningSystem().update(world, 0)
+
+    expect(resident.state).toBe(ResidentState.Walking)
+    expect(resident.journey.transit).toBeNull()
+    expect(resident.transportDecision!.busTime!).toBeGreaterThan(
+      resident.transportDecision!.walkingTime,
+    )
   })
 
   it('walks to its goal when there are no routes and clears any previous transit choice', () => {

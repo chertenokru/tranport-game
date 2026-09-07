@@ -19,6 +19,8 @@ export interface TransitJourney {
   readonly routeId: RouteId
   readonly boardingStopId: BusStopId
   readonly destinationStopId: BusStopId
+  readonly boardingLegIndex: number
+  readonly destinationLegIndex: number
 }
 
 export interface ResidentJourney {

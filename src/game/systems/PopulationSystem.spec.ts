@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { POPULATION_CONFIG, type PopulationConfig } from '@/game/config/population.config'
 import { GAME_CONFIG } from '@/game/config/game.config'
 import { GameEngine } from '@/game/core/GameEngine'
@@ -11,6 +11,24 @@ import { PedestrianMovementSystem } from './PedestrianMovementSystem'
 import { EconomySystem } from './EconomySystem'
 import { ResidentState } from '@/game/domain/Resident'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+
+// Времена в тестах жизненного цикла рассчитаны на скорость 40.
+// Изменения игрового баланса не должны менять условия этих тестов.
+vi.mock('@/game/config/pedestrians.config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/game/config/pedestrians.config')>()
+
+  return {
+    ...actual,
+    PEDESTRIANS_CONFIG: {
+      ...actual.PEDESTRIANS_CONFIG,
+      default: {
+        ...actual.PEDESTRIANS_CONFIG.default,
+        walkingSpeed: 40,
+        busTimeAdvantageFactor: 1.0,
+      },
+    },
+  }
+})
 
 function config(overrides: Partial<PopulationConfig> = {}): PopulationConfig {
   return { ...POPULATION_CONFIG, cycleIntervalSeconds: 10, groupProbability: 0, ...overrides }

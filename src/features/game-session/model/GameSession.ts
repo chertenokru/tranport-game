@@ -9,6 +9,7 @@ import { RoutePlanningSystem } from '@/game/systems/routePlanning/RoutePlanningS
 import { PopulationSystem } from '@/game/systems/PopulationSystem'
 import { ResidentArrivalSystem } from '@/game/systems/ResidentArrivalSystem'
 import { ResidentState } from '@/game/domain/Resident'
+import type { GameWorld } from '@/game/core/GameWorld.ts'
 
 export interface GameSessionSnapshot {
   elapsedTimeSeconds: number
@@ -25,17 +26,20 @@ export class GameSession {
   private renderer: GameRenderer | null = null
 
   constructor(
-    engine: GameEngine = new GameEngine(createVerticalSliceWorld(), [
-      new PopulationSystem(),
-      new RoutePlanningSystem(),
-      new PedestrianMovementSystem(),
-      new BusMovementSystem(),
-      new PassengerSystem(),
-      new EconomySystem(),
-      new ResidentArrivalSystem(),
-    ]),
+    engine?: GameEngine,
+    private readonly worldFactory: () => GameWorld = createVerticalSliceWorld,
   ) {
-    this.engine = engine
+    this.engine =
+      engine ??
+      new GameEngine(this.worldFactory(), [
+        new PopulationSystem(),
+        new RoutePlanningSystem(),
+        new PedestrianMovementSystem(),
+        new BusMovementSystem(),
+        new PassengerSystem(),
+        new EconomySystem(),
+        new ResidentArrivalSystem(),
+      ])
   }
 
   start(): void {
@@ -51,7 +55,7 @@ export class GameSession {
   }
 
   restart(): void {
-    this.engine.replaceWorld(createVerticalSliceWorld())
+    this.engine.replaceWorld(this.worldFactory())
     this.engine.start()
     this.render()
   }

@@ -8,8 +8,9 @@ import { provideGameSession } from '@/features/game-session/composables/useGameS
 import { GameStatus, useGameSessionStore } from '@/stores/gameSession.store.ts'
 import { useGameLoop } from '@/features/game-session/composables/useGameLoop.ts'
 import { GAME_CONFIG } from '@/game/config/game.config.ts'
+import { createIShapedWorld } from '@/game/world/createIShapedWorld.ts'
 
-const gameSession = markRaw(new GameSession())
+const gameSession = markRaw(new GameSession(undefined, createIShapedWorld))
 provideGameSession(gameSession)
 const gameSessionStore = useGameSessionStore()
 

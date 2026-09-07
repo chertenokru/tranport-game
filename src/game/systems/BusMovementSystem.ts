@@ -1,152 +1,44 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
-import { type Bus, BusState } from '@/game/domain/Bus'
-import type { BusRoute } from '@/game/domain/BusRoute'
-import type { BusStopId } from '@/game/domain/ids'
-import type { Vector2 } from '@/game/domain/geometry'
-import type { MapNode, MapNodeId } from '@/game/world/MapNode'
-
-import { findShortestRoadPath } from './tools/findShortestRoadPath.ts'
-import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath.ts'
-import { getDirection } from '@/game/tools/geometry.ts'
+import { BusState } from '@/game/domain/Bus'
+import { moveAlongPath } from './tools/movement/moveAlongPath'
+import { getDirection } from '@/game/tools/geometry'
 
 export class BusMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     for (const bus of world.buses.values()) {
+      const route = world.routes.get(bus.routeId)
+      const leg = route?.legs[bus.legIndex]
+      if (!route || !leg) continue
+
       if (bus.state === BusState.WaitingAtStop) {
-        this.updateWaitingBus(world, bus, deltaSeconds)
+        bus.waitingSecondsRemaining = Math.max(0, bus.waitingSecondsRemaining - deltaSeconds)
+        if (bus.waitingSecondsRemaining === 0) {
+          bus.pathIndex = 1
+          bus.state = BusState.Moving
+        }
         continue
       }
 
-      this.updateMovingBus(bus, deltaSeconds)
-    }
-  }
+      const movement = moveAlongPath({
+        position: bus.position,
+        path: leg.path,
+        pathIndex: bus.pathIndex,
+        maxDistance: bus.speed * deltaSeconds,
+      })
 
-  private updateWaitingBus(world: GameWorld, bus: Bus, deltaSeconds: number): void {
-    bus.waitingSecondsRemaining = Math.max(0, bus.waitingSecondsRemaining - deltaSeconds)
-
-    if (bus.waitingSecondsRemaining > 0) {
-      return
-    }
-
-    const route = world.routes.get(bus.routeId)
-
-    if (!route) {
-      return
-    }
-
-    this.planNextLeg(world, bus, route)
-  }
-
-  private planNextLeg(world: GameWorld, bus: Bus, route: BusRoute): void {
-    const nextStopIndex = this.getNextStopIndex(bus, route)
-
-    if (nextStopIndex === null) {
-      return
-    }
-
-    const currentStopId = route.stopIds[bus.currentStopIndex]
-    const nextStopId = route.stopIds[nextStopIndex]
-
-    if (!currentStopId || !nextStopId) {
-      return
-    }
-
-    const currentNode = this.findStopNode(world, currentStopId)
-
-    const nextNode = this.findStopNode(world, nextStopId)
-
-    if (!currentNode || !nextNode) {
-      return
-    }
-
-    const nodePath = findShortestRoadPath(world, currentNode.id, nextNode.id)
-
-    if (!nodePath || nodePath.length < 2) {
-      return
-    }
-
-    const positionPath = this.createPositionPath(world, nodePath)
-
-    if (!positionPath) {
-      return
-    }
-
-    bus.path = positionPath
-    bus.pathIndex = 1
-    bus.state = BusState.Moving
-  }
-
-  private getNextStopIndex(bus: Bus, route: BusRoute): number | null {
-    if (route.stopIds.length < 2) {
-      return null
-    }
-
-    let nextStopIndex = bus.currentStopIndex + bus.routeDirection
-
-    if (nextStopIndex < 0 || nextStopIndex >= route.stopIds.length) {
-      bus.routeDirection = bus.routeDirection === 1 ? -1 : 1
-      nextStopIndex = bus.currentStopIndex + bus.routeDirection
-    }
-
-    return nextStopIndex
-  }
-
-  private findStopNode(world: GameWorld, stopId: BusStopId): MapNode | undefined {
-    for (const node of world.roadNodes.values()) {
-      if (node.stopId === stopId) {
-        return node
-      }
-    }
-
-    return undefined
-  }
-
-  private createPositionPath(world: GameWorld, nodePath: readonly MapNodeId[]): Vector2[] | null {
-    const positions: Vector2[] = []
-
-    for (const nodeId of nodePath) {
-      const node = world.roadNodes.get(nodeId)
-
-      if (!node) {
-        return null
+      bus.position = movement.position
+      bus.pathIndex = movement.pathIndex
+      if (movement.heading) {
+        bus.direction = getDirection(movement.heading) ?? bus.direction
       }
 
-      positions.push(node.position)
-    }
-
-    return positions
-  }
-
-  private updateMovingBus(bus: Bus, deltaSeconds: number): void {
-    const movement = moveAlongPath({
-      position: bus.position,
-      path: bus.path,
-      pathIndex: bus.pathIndex,
-      maxDistance: bus.speed * deltaSeconds,
-    })
-
-    bus.position = movement.position
-    bus.pathIndex = movement.pathIndex
-
-    if (movement.heading) {
-      const direction = getDirection(movement.heading)
-
-      if (direction !== null) {
-        bus.direction = direction
+      if (movement.completed) {
+        bus.legIndex = (bus.legIndex + 1) % route.legs.length
+        bus.state = BusState.WaitingAtStop
+        bus.waitingSecondsRemaining = bus.stopWaitSeconds
+        bus.pathIndex = 0
       }
     }
-
-    if (movement.completed) {
-      this.finishLeg(bus)
-    }
-  }
-
-  private finishLeg(bus: Bus): void {
-    bus.currentStopIndex += bus.routeDirection
-    bus.state = BusState.WaitingAtStop
-    bus.waitingSecondsRemaining = bus.stopWaitSeconds
-    bus.path = []
-    bus.pathIndex = 0
   }
 }

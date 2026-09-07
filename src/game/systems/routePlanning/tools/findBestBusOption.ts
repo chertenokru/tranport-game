@@ -1,15 +1,14 @@
-import { type Bus, BusState } from '@/game/domain/Bus.ts'
-import type { BusId, RouteId } from '@/game/domain/ids.ts'
-
-import { estimateBusBoarding } from './estimateBusBoarding.ts'
+import { type Bus, BusState } from '@/game/domain/Bus'
+import type { BusRoute } from '@/game/domain/BusRoute'
+import type { BusId } from '@/game/domain/ids'
+import { estimateBusBoarding } from './estimateBusBoarding'
 
 export interface BestBusOptionInput {
   readonly buses: readonly Bus[]
-  readonly routeId: RouteId
-  readonly boardingStopIndex: number
-  readonly destinationStopIndex: number
+  readonly route: BusRoute
+  readonly boardingLegIndex: number
+  readonly destinationLegIndex: number
   readonly passengerArrivalTime: number
-  readonly legDistances: readonly number[]
 }
 
 export interface BusTravelOption {
@@ -23,69 +22,53 @@ export interface BusTravelOption {
 }
 
 export function findBestBusOption(input: BestBusOptionInput): BusTravelOption | null {
-  const routeStopCount = input.legDistances.length + 1
-
+  const { route, boardingLegIndex, destinationLegIndex } = input
+  const count = route.legs.length
   if (
-    input.boardingStopIndex < 0 ||
-    input.boardingStopIndex >= routeStopCount ||
-    input.destinationStopIndex < 0 ||
-    input.destinationStopIndex >= routeStopCount ||
-    input.boardingStopIndex === input.destinationStopIndex
+    count < 2 ||
+    !Number.isInteger(boardingLegIndex) ||
+    !route.legs[boardingLegIndex] ||
+    !Number.isInteger(destinationLegIndex) ||
+    !route.legs[destinationLegIndex] ||
+    boardingLegIndex === destinationLegIndex
   ) {
-    throw new RangeError('Invalid bus journey stop indexes')
+    throw new RangeError('Invalid bus journey leg indexes')
   }
 
-  const firstLegIndex = Math.min(input.boardingStopIndex, input.destinationStopIndex)
-
-  const lastLegIndex = Math.max(input.boardingStopIndex, input.destinationStopIndex)
-
-  const busTravelDistance = input.legDistances
-    .slice(firstLegIndex, lastLegIndex)
-    .reduce((total, distance) => total + distance, 0)
-
-  const intermediateStopCount = Math.max(
-    0,
-    Math.abs(input.destinationStopIndex - input.boardingStopIndex) - 1,
-  )
+  const legCount = (destinationLegIndex - boardingLegIndex + count) % count
+  let distance = 0
+  for (let offset = 0; offset < legCount; offset += 1) {
+    distance += route.legs[(boardingLegIndex + offset) % count]!.distance
+  }
 
   let bestOption: BusTravelOption | null = null
-
   for (const bus of input.buses) {
-    if (bus.routeId !== input.routeId) {
-      continue
-    }
-
+    if (bus.routeId !== route.id) continue
     if (
-      bus.currentStopIndex === input.boardingStopIndex &&
+      bus.legIndex === boardingLegIndex &&
       bus.state === BusState.WaitingAtStop &&
-      bus.passengerIds.length === bus.capacity
-    ) {
+      bus.passengerIds.length >= bus.capacity
+    )
       continue
-    }
 
-    const boardingEstimate = estimateBusBoarding({
+    const estimate = estimateBusBoarding({
       bus,
-      routeStopCount,
-      boardingStopIndex: input.boardingStopIndex,
-      destinationStopIndex: input.destinationStopIndex,
+      route,
+      boardingLegIndex,
       passengerArrivalTime: input.passengerArrivalTime,
-      legDistances: input.legDistances,
     })
+    if (!estimate) continue
 
-    if (!boardingEstimate) {
-      continue
-    }
-
-    const movementTime = busTravelDistance / bus.speed
-    const intermediateStopTime = intermediateStopCount * bus.stopWaitSeconds
-    const busTravelTime = boardingEstimate.remainingStopTime + movementTime + intermediateStopTime
-    const totalTimeAfterReachingStop = boardingEstimate.waitingTime + busTravelTime
+    const movementTime = distance / bus.speed
+    const intermediateStopTime = (legCount - 1) * bus.stopWaitSeconds
+    const busTravelTime = estimate.remainingStopTime + movementTime + intermediateStopTime
+    const totalTimeAfterReachingStop = estimate.waitingTime + busTravelTime
 
     if (!bestOption || totalTimeAfterReachingStop < bestOption.totalTimeAfterReachingStop) {
       bestOption = {
         busId: bus.id,
-        waitingTime: boardingEstimate.waitingTime,
-        boardingStopTime: boardingEstimate.remainingStopTime,
+        waitingTime: estimate.waitingTime,
+        boardingStopTime: estimate.remainingStopTime,
         movementTime,
         intermediateStopTime,
         busTravelTime,

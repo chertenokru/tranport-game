@@ -4,7 +4,6 @@ import { type Bus, BusState } from '@/game/domain/Bus'
 import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
 import { ResidentState } from '@/game/domain/Resident'
-import { getRouteDepartureDirection } from '@/game/systems/tools/movement/getRouteDepartureDirection.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
 
 export class PassengerSystem implements GameSystem {
@@ -21,7 +20,7 @@ export class PassengerSystem implements GameSystem {
         continue
       }
 
-      const currentStopId = route.stopIds[bus.currentStopIndex]
+      const currentStopId = route.legs[bus.legIndex]?.fromStopId
 
       if (!currentStopId) {
         continue
@@ -44,7 +43,13 @@ export class PassengerSystem implements GameSystem {
       const resident = world.residents.get(passengerId)
       const journey = resident?.journey
 
-      if (!resident || !journey || journey.transit?.destinationStopId !== currentStopId) {
+      if (
+        !resident ||
+        !journey ||
+        journey.transit?.routeId !== bus.routeId ||
+        journey.transit.destinationLegIndex !== bus.legIndex ||
+        journey.transit.destinationStopId !== currentStopId
+      ) {
         continue
       }
 
@@ -72,31 +77,25 @@ export class PassengerSystem implements GameSystem {
     route: BusRoute,
     currentStopId: BusStopId,
   ): void {
-    const departureDirection = getRouteDepartureDirection(
-      bus.currentStopIndex,
-      bus.routeDirection,
-      route.stopIds.length,
-    )
-
     for (const resident of world.residents.values()) {
       const transit = resident.journey?.transit
       if (
         resident.state !== ResidentState.WaitingBus ||
         !transit ||
         transit.routeId !== route.id ||
-        transit.boardingStopId !== currentStopId
+        transit.boardingStopId !== currentStopId ||
+        transit.boardingLegIndex !== bus.legIndex
       ) {
         continue
       }
 
-      const destinationIndex = route.stopIds.indexOf(transit.destinationStopId)
-
+      const destinationLeg = route.legs[transit.destinationLegIndex]
       if (
-        destinationIndex < 0 ||
-        !this.isDestinationAhead(bus.currentStopIndex, destinationIndex, departureDirection)
-      ) {
+        !destinationLeg ||
+        destinationLeg.fromStopId !== transit.destinationStopId ||
+        transit.destinationLegIndex === transit.boardingLegIndex
+      )
         continue
-      }
 
       if (bus.passengerIds.length >= bus.capacity) {
         resident.state = ResidentState.ChoosingTransport
@@ -109,13 +108,5 @@ export class PassengerSystem implements GameSystem {
 
       bus.passengerIds.push(resident.id)
     }
-  }
-
-  private isDestinationAhead(
-    currentStopIndex: number,
-    destinationStopIndex: number,
-    direction: 1 | -1,
-  ): boolean {
-    return (destinationStopIndex - currentStopIndex) * direction > 0
   }
 }

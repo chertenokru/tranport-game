@@ -3,8 +3,76 @@ import { describe, expect, it } from 'vitest'
 import { createVerticalSliceWorld } from '@/game/world/MapFactory.ts'
 
 import { estimateBusBoarding } from './estimateBusBoarding.ts'
+import { BusMovementSystem } from '@/game/systems/BusMovementSystem'
+import { createIShapedWorld } from '@/game/world/createIShapedWorld'
 
 describe('estimateBusBoarding', () => {
+  it('uses the remaining prepared path while the bus is moving', () => {
+    const world = createVerticalSliceWorld()
+    const route = world.routes.get('route-main')!
+    const bus = world.buses.get('bus-main')!
+    const movement = new BusMovementSystem()
+    movement.update(world, 1)
+    movement.update(world, 0.5)
+
+    expect(
+      estimateBusBoarding({
+        bus,
+        route,
+        boardingLegIndex: 1,
+        passengerArrivalTime: 0,
+      }),
+    ).toEqual({ waitingTime: 6.5, remainingStopTime: 1 })
+
+    // Проезд мимо начальной остановки после разворота не является посадкой.
+    expect(
+      estimateBusBoarding({
+        bus,
+        route,
+        boardingLegIndex: 0,
+        passengerArrivalTime: 0,
+      }),
+    ).toEqual({ waitingTime: 14.5, remainingStopTime: 1 })
+  })
+
+  it('distinguishes the two shop visits and includes the terminal detour', () => {
+    const world = createIShapedWorld()
+    const route = world.routes.get('route-upper-lower')!
+    const bus = world.buses.get('bus-route-upper-lower')!
+    bus.legIndex = 1
+    bus.position = { ...route.legs[1]!.path[0]! }
+    bus.waitingSecondsRemaining = 1
+
+    expect(
+      estimateBusBoarding({
+        bus,
+        route,
+        boardingLegIndex: 1,
+        passengerArrivalTime: 0,
+      }),
+    ).toEqual({ waitingTime: 0, remainingStopTime: 1 })
+    const returnVisit = estimateBusBoarding({
+      bus,
+      route,
+      boardingLegIndex: 3,
+      passengerArrivalTime: 0,
+    })!
+    expect(returnVisit.waitingTime).toBeCloseTo(18.2)
+    expect(returnVisit.remainingStopTime).toBe(1)
+  })
+
+  it('advances by whole cycles when a passenger arrives much later', () => {
+    const world = createVerticalSliceWorld()
+    expect(
+      estimateBusBoarding({
+        bus: world.buses.get('bus-main')!,
+        route: world.routes.get('route-main')!,
+        boardingLegIndex: 0,
+        passengerArrivalTime: 10000,
+      }),
+    ).toEqual({ waitingTime: 0, remainingStopTime: 1 })
+  })
+
   it('returns the remaining stop time when the passenger catches a waiting bus', () => {
     const world = createVerticalSliceWorld()
     const bus = world.buses.get('bus-main')
@@ -15,11 +83,9 @@ describe('estimateBusBoarding', () => {
 
     const estimate = estimateBusBoarding({
       bus,
-      routeStopCount: 2,
-      boardingStopIndex: 0,
-      destinationStopIndex: 1,
+      route: world.routes.get('route-main')!,
+      boardingLegIndex: 0,
       passengerArrivalTime: 0.5,
-      legDistances: [440],
     })
 
     expect(estimate).toEqual({
@@ -38,15 +104,13 @@ describe('estimateBusBoarding', () => {
 
     const estimate = estimateBusBoarding({
       bus,
-      routeStopCount: 2,
-      boardingStopIndex: 0,
-      destinationStopIndex: 1,
+      route: world.routes.get('route-main')!,
+      boardingLegIndex: 0,
       passengerArrivalTime: 3,
-      legDistances: [440],
     })
 
     expect(estimate).toEqual({
-      waitingTime: 10,
+      waitingTime: 13,
       remainingStopTime: 1,
     })
   })
@@ -64,15 +128,13 @@ describe('estimateBusBoarding', () => {
         ...initialBus,
         stopWaitSeconds: 8,
       },
-      routeStopCount: 2,
-      boardingStopIndex: 0,
-      destinationStopIndex: 1,
+      route: world.routes.get('route-main')!,
+      boardingLegIndex: 0,
       passengerArrivalTime: 3,
-      legDistances: [440],
     })
 
     expect(estimate).toEqual({
-      waitingTime: 3.5,
+      waitingTime: 5,
       remainingStopTime: 8,
     })
   })

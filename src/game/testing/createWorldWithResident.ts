@@ -13,6 +13,8 @@ export function createWorldWithResident() {
       routeId: 'route-main',
       boardingStopId: 'stop-house',
       destinationStopId: 'stop-office',
+      boardingLegIndex: 0,
+      destinationLegIndex: 1,
     },
   }
   resident.state = ResidentState.ChoosingTransport

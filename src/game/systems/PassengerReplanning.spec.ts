@@ -44,6 +44,8 @@ function createWaitingGroup() {
         routeId: 'route-main',
         boardingStopId: stop.id,
         destinationStopId: 'stop-office',
+        boardingLegIndex: 0,
+        destinationLegIndex: 1,
       },
     }
     world.residents.set(resident.id, resident)
