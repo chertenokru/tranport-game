@@ -1,9 +1,11 @@
 import type { PedestrianCrossing } from '@/game/domain/PedestrianCrossing.ts'
 import { getDirectionAngle } from '@/game/tools/geometry.ts'
+import { getPedestrianSignal } from '@/game/tools/getPedestrianSignal'
 
 export function drawPedestrianCrossing(
   context: CanvasRenderingContext2D,
   pedestrianCrossing: Readonly<PedestrianCrossing>,
+  elapsedSeconds = 0,
 ): void {
   const { position, width, direction } = pedestrianCrossing
   const halfSize = width / 2
@@ -14,7 +16,7 @@ export function drawPedestrianCrossing(
     context.translate(position.x, position.y)
     context.rotate(getDirectionAngle(direction))
 
-    context.strokeStyle = '#f8fafc'
+    context.strokeStyle = getPedestrianSignal(pedestrianCrossing, elapsedSeconds)?.color ?? '#f8fafc'
     context.lineWidth = 2
     context.lineCap = 'butt'
     context.setLineDash([])

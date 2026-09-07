@@ -23,6 +23,7 @@ export class GameWorld {
   money: number = GAME_CONFIG.economy.startingMoney
   deliveredPassengers = 0
   accidents = 0
+  transportTimeSeconds = 0
 
   readonly buildings = new Map<BuildingId, Building>()
   readonly stops = new Map<BusStopId, BusStop>()
@@ -42,6 +43,7 @@ export class GameWorld {
     this.money = GAME_CONFIG.economy.startingMoney
     this.deliveredPassengers = 0
     this.accidents = 0
+    this.transportTimeSeconds = 0
     this.buses.clear()
     this.trafficZoneOwners.clear()
     this.crossingOccupants.clear()

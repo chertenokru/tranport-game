@@ -36,6 +36,49 @@ function createScene() {
 }
 
 describe('PedestrianCrossingSystem', () => {
+  it('holds a pedestrian on red and admits them when green starts', () => {
+    const { world, bus, resident } = createScene()
+    world.buses.delete(bus.id)
+    world.crossings.set('crossing', {
+      ...world.crossings.get('crossing')!,
+      signalTiming: {
+        pedestrianGreenSeconds: 8,
+        pedestrianRedSeconds: 12,
+        phaseOffsetSeconds: 10,
+      },
+    })
+    const system = new TransportSystem()
+
+    system.update(world, 9)
+    expect(resident.position).toEqual({ x: 400, y: 296 })
+    expect(world.crossingOccupants.has('crossing')).toBe(false)
+
+    system.update(world, 1.5)
+    expect(resident.position.y).toBeCloseTo(306)
+    expect(world.crossingOccupants.get('crossing')).toEqual(new Set([resident.id]))
+  })
+
+  it('holds a bus until vehicle green and the crossing is empty', () => {
+    const { world, bus, resident } = createScene()
+    world.crossings.set('crossing', {
+      ...world.crossings.get('crossing')!,
+      signalTiming: {
+        pedestrianGreenSeconds: 8,
+        pedestrianRedSeconds: 12,
+        phaseOffsetSeconds: 0,
+      },
+    })
+    const system = new TransportSystem()
+
+    system.update(world, 6)
+    expect(resident.position).toEqual({ x: 400, y: 384 })
+    expect(bus.position.x).toBeCloseTo(361)
+
+    system.update(world, 2.5)
+    expect(bus.position.x).toBeCloseTo(401)
+    expect(world.trafficZoneOwners.get('crossing')).toBe(bus.id)
+  })
+
   it('lets pedestrians enter first and holds a bus before the occupied crossing', () => {
     const { world, bus, resident } = createScene()
     const system = new TransportSystem()

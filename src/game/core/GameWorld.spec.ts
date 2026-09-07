@@ -23,6 +23,7 @@ describe('GameWorld', () => {
     world.money = 50
     world.deliveredPassengers = 12
     world.accidents = 3
+    world.transportTimeSeconds = 15
     world.crossingOccupants.set('crossing', new Set(['resident']))
     world.trafficZoneOwners.set('crossing', 'bus')
 
@@ -31,6 +32,7 @@ describe('GameWorld', () => {
     expect(world.money).toBe(GAME_CONFIG.economy.startingMoney)
     expect(world.deliveredPassengers).toBe(0)
     expect(world.accidents).toBe(0)
+    expect(world.transportTimeSeconds).toBe(0)
     expect(world.buses.size).toBe(0)
     expect(world.crossingOccupants.size).toBe(0)
     expect(world.trafficZoneOwners.size).toBe(0)

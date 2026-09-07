@@ -10,6 +10,20 @@ export interface PedestrianCrossing {
   readonly direction: Direction
   readonly roadWidth: number
   readonly width: number
+  readonly signalTiming?: PedestrianSignalTiming
+}
+
+export interface PedestrianSignalTiming {
+  readonly pedestrianGreenSeconds: number
+  readonly pedestrianRedSeconds: number
+  /** Time from simulation zero to the start of this signal's pedestrian green phase. */
+  readonly phaseOffsetSeconds: number
+}
+
+export enum PedestrianSignalColor {
+  Green = 'green',
+  Yellow = 'yellow',
+  Red = 'red',
 }
 
 export interface PedestrianWaypoint extends Vector2 {

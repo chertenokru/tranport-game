@@ -9,6 +9,7 @@ import { PedestrianCollisionSystem } from './collision/PedestrianCollisionSystem
 import { BusTrafficSystem } from './traffic/BusTrafficSystem'
 import { TRAFFIC_CONFIG, type TrafficConfig } from '@/game/config/traffic.config'
 import { PedestrianCrossingSystem } from './crossings/PedestrianCrossingSystem'
+import { secondsUntilNextPedestrianSignalChange } from '@/game/tools/getPedestrianSignal'
 
 // Synchronize only transport: a walker cannot board a bus that left earlier in the step.
 export class TransportSystem implements GameSystem {
@@ -44,6 +45,7 @@ export class TransportSystem implements GameSystem {
       const pedestrianDurations = this.collisions.resolveStep(world, step, traffic.motions)
       this.pedestrians.update(world, step, pedestrianDurations)
       this.buses.update(world, step, traffic.motions)
+      world.transportTimeSeconds += step
       this.traffic.releaseExitedZones(world)
       this.crossings.update(world)
       remaining = Math.max(0, remaining - step)
@@ -56,6 +58,12 @@ export class TransportSystem implements GameSystem {
       if (!isResidentWalking(resident.state)) continue
       const { duration } = getResidentMotion(world, resident)
       if (duration > 0) step = Math.min(step, duration)
+    }
+    for (const crossing of world.crossings.values()) {
+      step = Math.min(
+        step,
+        secondsUntilNextPedestrianSignalChange(crossing, world.transportTimeSeconds),
+      )
     }
     return step
   }

@@ -12,6 +12,15 @@ const START = 'road-upper-left-start'
 const DESTINATION = 'road-lower-right-end'
 
 describe('createIShapedWorld', () => {
+  it('uses synchronized signals with the middle crossing in the opposite phase', () => {
+    const world = createIShapedWorld()
+    const middle = world.crossings.get('crossing-middle')!
+    const horizontal = [...world.crossings.values()].filter((crossing) => crossing !== middle)
+
+    expect(middle.signalTiming?.phaseOffsetSeconds).toBe(10)
+    expect(horizontal.every((crossing) => crossing.signalTiming?.phaseOffsetSeconds === 0)).toBe(true)
+  })
+
   it('serves every stop once per cycle with the correct arrival and departure heading', () => {
     const world = createIShapedWorld()
     for (const route of world.routes.values()) {

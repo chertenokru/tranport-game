@@ -3,9 +3,10 @@ import { getCrossingGeometry } from '@/game/tools/getCrossingGeometry'
 import { getVehicleBounds } from '@/game/tools/getVehicleBounds'
 import { getBusMotion } from '../tools/movement/getBusMotion'
 import { isResidentWalking } from '../tools/movement/isResidentWalking'
+import { getPedestrianSignal } from '@/game/tools/getPedestrianSignal'
 
 export class PedestrianCrossingSystem {
-  update(world: GameWorld): void {
+  update(world: GameWorld, elapsedSeconds: number = world.transportTimeSeconds): void {
     for (const [id, occupants] of world.crossingOccupants) {
       for (const residentId of occupants) {
         const resident = world.residents.get(residentId)
@@ -15,6 +16,7 @@ export class PedestrianCrossingSystem {
       if (occupants.size === 0) world.crossingOccupants.delete(id)
     }
     for (const crossing of world.crossings.values()) {
+      if (getPedestrianSignal(crossing, elapsedSeconds)?.pedestriansCanEnter === false) continue
       if (world.trafficZoneOwners.has(crossing.id)) continue
       const { halfSize } = getCrossingGeometry(crossing)
       const busInside = [...world.buses.values()].some((bus) => {

@@ -53,9 +53,9 @@ export function createCanvasRenderer(canvas: HTMLCanvasElement): CanvasGameRende
     }
   })
 
-  renderer.addLayer(({ context }) => {
+  renderer.addLayer(({ context, timeMs }) => {
     for (const crossing of getWorld().crossings.values()) {
-      drawPedestrianCrossing(context, crossing)
+      drawPedestrianCrossing(context, crossing, timeMs / 1_000)
     }
   })
 

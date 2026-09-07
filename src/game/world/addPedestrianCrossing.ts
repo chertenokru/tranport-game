@@ -1,10 +1,17 @@
 import type { GameWorld } from '@/game/core/GameWorld'
 import type { PedestrianCrossing } from '@/game/domain/PedestrianCrossing'
+import type { PedestrianSignalTiming } from '@/game/domain/PedestrianCrossing'
 import type { Vector2 } from '@/game/domain/geometry'
 import { CROSSINGS_CONFIG } from '@/game/config/crossings.config'
 import { localToWorld } from '@/game/tools/geometry'
 
-export function addPedestrianCrossing(world: GameWorld, id: string, roadId: string, distanceFromStart: number): PedestrianCrossing {
+export function addPedestrianCrossing(
+  world: GameWorld,
+  id: string,
+  roadId: string,
+  distanceFromStart: number,
+  signalTiming?: PedestrianSignalTiming,
+): PedestrianCrossing {
   const road = world.roads.get(roadId)
   const width = CROSSINGS_CONFIG.width
   if (!road || world.crossings.has(id) || !Number.isFinite(distanceFromStart) ||
@@ -14,6 +21,7 @@ export function addPedestrianCrossing(world: GameWorld, id: string, roadId: stri
   const crossing: PedestrianCrossing = {
     id, roadId, width, roadWidth: road.width, direction: road.direction,
     position: localToWorld({ x: 0, y: distanceFromStart - road.length / 2 }, road.position, road.direction),
+    signalTiming,
   }
   // The road graph is split at both boundaries. These are ordinary nodes, so
   // the existing routing rules do not permit turning around on a crossing.
