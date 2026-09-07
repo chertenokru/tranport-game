@@ -5,7 +5,7 @@ import { CollisionShape, type CollisionBody } from '@/game/tools/collision/Colli
 import { findCollisionTime } from '@/game/tools/collision/findCollisionTime'
 import { getVehicleBounds } from '@/game/tools/getVehicleBounds'
 import { getBusMotion, type BusMotions } from '../tools/movement/getBusMotion'
-import { getPathMotion } from '../tools/movement/getPathMotion'
+import { getResidentMotion } from '../tools/movement/getResidentMotion'
 import { isResidentWalking } from '../tools/movement/isResidentWalking'
 
 export class PedestrianCollisionSystem {
@@ -31,7 +31,7 @@ export class PedestrianCollisionSystem {
         continue
 
       const velocity = isResidentWalking(resident.state)
-        ? getPathMotion(resident, resident.walkingSpeed).velocity
+        ? getResidentMotion(world, resident).velocity
         : { x: 0, y: 0 }
       const body: CollisionBody = {
         shape: CollisionShape.Circle,

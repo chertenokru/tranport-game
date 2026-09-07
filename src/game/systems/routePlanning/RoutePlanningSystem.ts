@@ -1,16 +1,17 @@
 import type { GameSystem } from '@/game/core/GameSystem.ts'
 import type { GameWorld } from '@/game/core/GameWorld.ts'
 import { type Resident, ResidentState, type TransitJourney } from '@/game/domain/Resident.ts'
-import type { Vector2 } from '@/game/domain/geometry.ts'
+import type { PedestrianWaypoint } from '@/game/domain/PedestrianCrossing'
 import type { BusId } from '@/game/domain/ids.ts'
 import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision.ts'
 import { chooseTransport } from './tools/chooseTransport.ts'
 import { findBestBusOption } from './tools/findBestBusOption.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+import { buildPedestrianPath, pedestrianPathDistance } from '@/game/tools/routing/buildPedestrianPath'
 
 interface TransitOption {
   readonly transit: TransitJourney
-  readonly boardingPosition: Vector2
+  readonly boardingPath: readonly PedestrianWaypoint[]
   readonly busId: BusId
   readonly choice: ReturnType<typeof chooseTransport>
 }
@@ -31,7 +32,13 @@ export class RoutePlanningSystem implements GameSystem {
     const destination = world.buildings.get(journey.destinationBuildingId)
     if (!destination) return
 
-    const walkingDistance = distanceBetween(resident.position, getBuildingEntrance(destination))
+    const destinationPosition = getBuildingEntrance(destination)
+    const walkingPath = buildPedestrianPath(world, resident.position, destinationPosition)
+    const walkingDistance = pedestrianPathDistance(walkingPath)
+    const pathsToStops = new Map([...world.stops.values()].map((stop) =>
+      [stop.id, buildPedestrianPath(world, resident.position, stop.waitingPosition)]))
+    const distancesFromStops = new Map([...world.stops.values()].map((stop) =>
+      [stop.id, pedestrianPathDistance(buildPedestrianPath(world, stop.waitingPosition, destinationPosition))]))
     const walkingTime = walkingDistance / resident.walkingSpeed
     const buses = [...world.buses.values()]
     let bestOption: TransitOption | null = null
@@ -51,14 +58,9 @@ export class RoutePlanningSystem implements GameSystem {
           if (!destinationStop || destinationStop.id === boardingStop.id) continue
 
           unavailableReason = TransportDecisionReason.NoBusAvailable
-          const walkingToStopDistance = distanceBetween(
-            resident.position,
-            boardingStop.waitingPosition,
-          )
-          const walkingFromStopDistance = distanceBetween(
-            destinationStop.waitingPosition,
-            getBuildingEntrance(destination),
-          )
+          const boardingPath = pathsToStops.get(boardingStop.id)!
+          const walkingToStopDistance = pedestrianPathDistance(boardingPath)
+          const walkingFromStopDistance = distancesFromStops.get(destinationStop.id)!
           const busOption = findBestBusOption({
             buses,
             route,
@@ -85,7 +87,7 @@ export class RoutePlanningSystem implements GameSystem {
                 boardingStopId: boardingStop.id,
                 destinationStopId: destinationStop.id,
               },
-              boardingPosition: boardingStop.waitingPosition,
+              boardingPath,
               busId: busOption.busId,
               choice,
             }
@@ -108,14 +110,7 @@ export class RoutePlanningSystem implements GameSystem {
     }
     journey.transit = useBus && bestOption ? bestOption.transit : null
     resident.state = useBus ? ResidentState.WalkingToStop : ResidentState.Walking
-    resident.path = [
-      resident.position,
-      useBus && bestOption ? bestOption.boardingPosition : getBuildingEntrance(destination),
-    ]
+    resident.path = useBus && bestOption ? bestOption.boardingPath : walkingPath
     resident.pathIndex = 1
   }
-}
-
-function distanceBetween(from: Vector2, to: Vector2): number {
-  return Math.hypot(to.x - from.x, to.y - from.y)
 }

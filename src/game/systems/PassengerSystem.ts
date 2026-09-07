@@ -5,6 +5,7 @@ import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId } from '@/game/domain/ids'
 import { ResidentState } from '@/game/domain/Resident'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+import { buildPedestrianPath } from '@/game/tools/routing/buildPedestrianPath'
 
 export class PassengerSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
@@ -68,7 +69,7 @@ export class PassengerSystem implements GameSystem {
       resident.position = {
         ...stop.waitingPosition,
       }
-      resident.path = [stop.waitingPosition, getBuildingEntrance(destination)]
+      resident.path = buildPedestrianPath(world, stop.waitingPosition, getBuildingEntrance(destination))
       resident.pathIndex = 1
       resident.state = ResidentState.WalkingFromStop
     }

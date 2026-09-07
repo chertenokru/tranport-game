@@ -1,6 +1,7 @@
 import type { Vector2 } from './geometry'
 import type { BuildingId, BusStopId, ResidentId, RouteId } from './ids'
 import type { TransportDecision } from './TransportDecision'
+import type { PedestrianWaypoint } from './PedestrianCrossing'
 
 export enum ResidentState {
   IdleInBuilding = 'idleInBuilding',
@@ -38,6 +39,6 @@ export interface Resident {
   transportDecision: TransportDecision | null
   position: Vector2
   state: ResidentState
-  path: readonly Vector2[]
+  path: readonly PedestrianWaypoint[]
   pathIndex: number
 }

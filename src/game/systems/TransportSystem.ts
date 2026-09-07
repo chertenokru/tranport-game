@@ -3,15 +3,17 @@ import type { GameWorld } from '@/game/core/GameWorld'
 import { BusMovementSystem } from './BusMovementSystem'
 import { PassengerSystem } from './PassengerSystem'
 import { PedestrianMovementSystem } from './PedestrianMovementSystem'
-import { getPathMotion } from './tools/movement/getPathMotion'
+import { getResidentMotion } from './tools/movement/getResidentMotion'
 import { isResidentWalking } from './tools/movement/isResidentWalking'
 import { PedestrianCollisionSystem } from './collision/PedestrianCollisionSystem'
 import { BusTrafficSystem } from './traffic/BusTrafficSystem'
 import { TRAFFIC_CONFIG, type TrafficConfig } from '@/game/config/traffic.config'
+import { PedestrianCrossingSystem } from './crossings/PedestrianCrossingSystem'
 
 // Synchronize only transport: a walker cannot board a bus that left earlier in the step.
 export class TransportSystem implements GameSystem {
   private readonly traffic: BusTrafficSystem
+  private readonly crossings = new PedestrianCrossingSystem()
   private readonly collisions = new PedestrianCollisionSystem()
   private readonly passengers = new PassengerSystem()
   private readonly pedestrians = new PedestrianMovementSystem()
@@ -32,6 +34,8 @@ export class TransportSystem implements GameSystem {
       this.collisions.resolveStep(world, 0)
       this.pedestrians.update(world, 0)
       this.buses.update(world, 0)
+      this.traffic.releaseExitedZones(world)
+      this.crossings.update(world)
       if (remaining === 0) return
 
       const traffic = this.traffic.plan(world, this.nextStep(world, remaining))
@@ -39,6 +43,8 @@ export class TransportSystem implements GameSystem {
       this.collisions.resolveStep(world, step, traffic.motions)
       this.pedestrians.update(world, step)
       this.buses.update(world, step, traffic.motions)
+      this.traffic.releaseExitedZones(world)
+      this.crossings.update(world)
       remaining = Math.max(0, remaining - step)
     } while (remaining > 0)
   }
@@ -47,7 +53,7 @@ export class TransportSystem implements GameSystem {
     let step = maximum
     for (const resident of world.residents.values()) {
       if (!isResidentWalking(resident.state)) continue
-      const { duration } = getPathMotion(resident, resident.walkingSpeed)
+      const { duration } = getResidentMotion(world, resident)
       if (duration > 0) step = Math.min(step, duration)
     }
     return step

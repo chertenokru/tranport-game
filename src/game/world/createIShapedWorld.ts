@@ -13,6 +13,7 @@ import { localToWorld } from '@/game/tools/geometry.ts'
 import { createBus } from './createBus'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
 import { createBusRoute } from '@/game/tools/routing/createBusRoute'
+import { addPedestrianCrossing } from './addPedestrianCrossing'
 
 const ROAD_WIDTH = 64
 
@@ -318,6 +319,12 @@ export function createIShapedWorld(): GameWorld {
       })
     }
   }
+
+  addPedestrianCrossing(world, 'crossing-upper-left', 'road-upper-left', 176)
+  addPedestrianCrossing(world, 'crossing-upper-right', 'road-upper-right', 208)
+  addPedestrianCrossing(world, 'crossing-middle', 'road-middle', 218)
+  addPedestrianCrossing(world, 'crossing-lower-left', 'road-lower-left', 176)
+  addPedestrianCrossing(world, 'crossing-lower-right', 'road-lower-right', 208)
 
   const routes = [
     createBusRoute(world, {

@@ -17,6 +17,7 @@ import type { BusRoute } from '@/game/domain/BusRoute.ts'
 import type { Bus } from '@/game/domain/Bus.ts'
 import type { Resident } from '@/game/domain/Resident.ts'
 import type { Intersection } from '@/game/domain/Intersection.ts'
+import type { PedestrianCrossing } from '@/game/domain/PedestrianCrossing'
 
 export class GameWorld {
   money: number = GAME_CONFIG.economy.startingMoney
@@ -29,6 +30,8 @@ export class GameWorld {
   readonly roadNodes = new Map<MapNodeId, MapNode>()
   readonly roadEdges = new Map<MapEdgeId, MapEdge>()
   readonly intersections = new Map<IntersectionId, Intersection>()
+  readonly crossings = new Map<string, PedestrianCrossing>()
+  readonly crossingOccupants = new Map<string, Set<ResidentId>>()
   readonly trafficZoneOwners = new Map<string, BusId>()
   readonly routes = new Map<RouteId, BusRoute>()
   readonly buses = new Map<BusId, Bus>()
@@ -41,6 +44,7 @@ export class GameWorld {
     this.accidents = 0
     this.buses.clear()
     this.trafficZoneOwners.clear()
+    this.crossingOccupants.clear()
     this.residents.clear()
     this.population.secondsUntilNextCycle = 0
     this.population.nextResidentId = 1

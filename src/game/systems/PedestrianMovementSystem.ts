@@ -12,14 +12,16 @@ export class PedestrianMovementSystem implements GameSystem {
         continue
       }
 
-      this.movePedestrian(resident, deltaSeconds)
+      this.movePedestrian(world, resident, deltaSeconds)
     }
   }
 
-  private movePedestrian(resident: Resident, deltaSeconds: number): void {
+  private movePedestrian(world: GameWorld, resident: Resident, deltaSeconds: number): void {
+    const blockedIndex = resident.path.findIndex((point, index) => index >= resident.pathIndex &&
+      point.crossingId !== undefined && !world.crossingOccupants.get(point.crossingId)?.has(resident.id))
     const movement = moveAlongPath({
       position: resident.position,
-      path: resident.path,
+      path: blockedIndex < 0 ? resident.path : resident.path.slice(0, blockedIndex),
       pathIndex: resident.pathIndex,
       maxDistance: resident.walkingSpeed * deltaSeconds,
     })
@@ -27,7 +29,7 @@ export class PedestrianMovementSystem implements GameSystem {
     resident.position = movement.position
     resident.pathIndex = movement.pathIndex
 
-    if (movement.completed) {
+    if (movement.completed && resident.pathIndex >= resident.path.length) {
       this.finishPath(resident)
     }
   }
