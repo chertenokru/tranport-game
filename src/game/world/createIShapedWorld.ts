@@ -321,10 +321,10 @@ export function createIShapedWorld(): GameWorld {
     }
   }
 
-  addSignalizedPedestrianCrossing(world, 'crossing-upper-left', 'road-upper-left', 176)
+  addSignalizedPedestrianCrossing(world, 'crossing-upper-left', 'road-upper-left', 176, 10)
   addSignalizedPedestrianCrossing(world, 'crossing-upper-right', 'road-upper-right', 208)
   addPedestrianCrossing(world, 'crossing-middle', 'road-middle', 218)
-  addSignalizedPedestrianCrossing(world, 'crossing-lower-left', 'road-lower-left', 176)
+  addSignalizedPedestrianCrossing(world, 'crossing-lower-left', 'road-lower-left', 176, 10)
   addSignalizedPedestrianCrossing(world, 'crossing-lower-right', 'road-lower-right', 208)
 
   const routes = [
