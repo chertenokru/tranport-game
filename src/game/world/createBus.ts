@@ -10,6 +10,14 @@ export function createBus(
   vehicle: VehicleTypeConfig,
   legIndex = 0,
 ): Bus {
+  if (
+    !Number.isFinite(vehicle.speed) ||
+    vehicle.speed <= 0 ||
+    !Number.isFinite(vehicle.stopWaitSeconds) ||
+    vehicle.stopWaitSeconds < 0
+  ) {
+    throw new RangeError('Bus speed must be positive and dwell time non-negative')
+  }
   const leg = route.legs[legIndex]
   const previous = route.legs[(legIndex + route.legs.length - 1) % route.legs.length]
   const position = leg?.path[0]

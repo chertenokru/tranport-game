@@ -19,7 +19,7 @@ describe('estimateBusBoarding', () => {
       estimateBusBoarding({
         bus,
         route,
-        boardingLegIndex: 1,
+        boardingStopIndex: 1,
         passengerArrivalTime: 0,
       }),
     ).toEqual({ waitingTime: 6.5, remainingStopTime: 1 })
@@ -29,7 +29,7 @@ describe('estimateBusBoarding', () => {
       estimateBusBoarding({
         bus,
         route,
-        boardingLegIndex: 0,
+        boardingStopIndex: 0,
         passengerArrivalTime: 0,
       }),
     ).toEqual({ waitingTime: 14.5, remainingStopTime: 1 })
@@ -47,14 +47,14 @@ describe('estimateBusBoarding', () => {
       estimateBusBoarding({
         bus,
         route,
-        boardingLegIndex: 1,
+        boardingStopIndex: 1,
         passengerArrivalTime: 0,
       }),
     ).toEqual({ waitingTime: 0, remainingStopTime: 1 })
     const returnVisit = estimateBusBoarding({
       bus,
       route,
-      boardingLegIndex: 3,
+      boardingStopIndex: 3,
       passengerArrivalTime: 0,
     })!
     expect(returnVisit.waitingTime).toBeCloseTo(18.2)
@@ -67,7 +67,7 @@ describe('estimateBusBoarding', () => {
       estimateBusBoarding({
         bus: world.buses.get('bus-main')!,
         route: world.routes.get('route-main')!,
-        boardingLegIndex: 0,
+        boardingStopIndex: 0,
         passengerArrivalTime: 10000,
       }),
     ).toEqual({ waitingTime: 0, remainingStopTime: 1 })
@@ -84,7 +84,7 @@ describe('estimateBusBoarding', () => {
     const estimate = estimateBusBoarding({
       bus,
       route: world.routes.get('route-main')!,
-      boardingLegIndex: 0,
+      boardingStopIndex: 0,
       passengerArrivalTime: 0.5,
     })
 
@@ -105,7 +105,7 @@ describe('estimateBusBoarding', () => {
     const estimate = estimateBusBoarding({
       bus,
       route: world.routes.get('route-main')!,
-      boardingLegIndex: 0,
+      boardingStopIndex: 0,
       passengerArrivalTime: 3,
     })
 
@@ -129,7 +129,7 @@ describe('estimateBusBoarding', () => {
         stopWaitSeconds: 8,
       },
       route: world.routes.get('route-main')!,
-      boardingLegIndex: 0,
+      boardingStopIndex: 0,
       passengerArrivalTime: 3,
     })
 

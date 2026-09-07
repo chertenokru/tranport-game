@@ -12,14 +12,14 @@ import type { BusStop } from '@/game/domain/BusStop.ts'
 import { localToWorld } from '@/game/tools/geometry.ts'
 import { createBus } from './createBus'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
-import { createShuttleRoute } from '@/game/tools/routing/createShuttleRoute'
+import { createBusRoute } from '@/game/tools/routing/createBusRoute'
 
 const ROAD_WIDTH = 64
 
 interface RoadStopPlacement {
   readonly roadId: RoadId
   readonly distanceFromStart: number
-  readonly stop: Omit<BusStop, 'vehiclePosition'>
+  readonly stop: Omit<BusStop, 'vehiclePosition' | 'roadNodeId'>
 }
 
 const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
@@ -28,6 +28,7 @@ const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
     distanceFromStart: 32,
     stop: {
       id: 'stop-upper-house',
+      travelDirection: Direction.West,
       name: 'Дом 1',
       waitingPosition: { x: 96, y: 106 },
       direction: Direction.South,
@@ -38,6 +39,7 @@ const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
     distanceFromStart: 352,
     stop: {
       id: 'stop-upper-office',
+      travelDirection: Direction.West,
       name: 'Офис 1',
       waitingPosition: { x: 864, y: 106 },
       direction: Direction.South,
@@ -48,9 +50,21 @@ const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
     distanceFromStart: 168,
     stop: {
       id: 'stop-shop',
+      travelDirection: Direction.North,
       name: 'Магазин',
       waitingPosition: { x: 524, y: 350 },
       direction: Direction.West,
+    },
+  },
+  {
+    roadId: 'road-middle',
+    distanceFromStart: 168,
+    stop: {
+      id: 'stop-shop-south',
+      name: 'Магазин — на юг',
+      waitingPosition: { x: 436, y: 350 },
+      direction: Direction.East,
+      travelDirection: Direction.South,
     },
   },
   {
@@ -58,6 +72,7 @@ const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
     distanceFromStart: 32,
     stop: {
       id: 'stop-lower-house',
+      travelDirection: Direction.East,
       name: 'Дом 2',
       waitingPosition: { x: 96, y: 594 },
       direction: Direction.North,
@@ -68,6 +83,7 @@ const STOP_PLACEMENTS: readonly RoadStopPlacement[] = [
     distanceFromStart: 352,
     stop: {
       id: 'stop-lower-office',
+      travelDirection: Direction.East,
       name: 'Офис 2',
       waitingPosition: { x: 864, y: 594 },
       direction: Direction.North,
@@ -191,7 +207,12 @@ export function createIShapedWorld(): GameWorld {
     for (const placement of placements) {
       const distance = placement.distanceFromStart
 
-      if (!Number.isFinite(distance) || distance <= previousDistance || distance >= road.length) {
+      if (
+        !Number.isFinite(distance) ||
+        distance <= 0 ||
+        distance < previousDistance ||
+        distance >= road.length
+      ) {
         throw new Error(`Invalid stop position: "${placement.stop.id}"`)
       }
 
@@ -201,18 +222,20 @@ export function createIShapedWorld(): GameWorld {
         road.direction,
       )
 
+      // Opposite platforms at the same position share one road node.
+      const nodeId = distance === previousDistance ? previousNodeId : `node-${placement.stop.id}`
       const stop: BusStop = {
         ...placement.stop,
         vehiclePosition,
+        roadNodeId: nodeId,
       }
 
-      const nodeId = `node-${stop.id}`
-
       world.stops.set(stop.id, stop)
+      if (distance === previousDistance) continue
+
       world.roadNodes.set(nodeId, {
         id: nodeId,
         position: vehiclePosition,
-        stopId: stop.id,
       })
 
       connectNodes(world, previousNodeId, nodeId, { roadId: road.id })
@@ -297,15 +320,15 @@ export function createIShapedWorld(): GameWorld {
   }
 
   const routes = [
-    createShuttleRoute(world, {
+    createBusRoute(world, {
       id: 'route-upper-lower',
       name: 'Дом 1 — Магазин — Офис 2',
-      stopIds: ['stop-upper-house', 'stop-shop', 'stop-lower-office'],
+      stopIds: ['stop-upper-house', 'stop-shop-south', 'stop-lower-office', 'stop-shop'],
     }),
-    createShuttleRoute(world, {
+    createBusRoute(world, {
       id: 'route-lower-upper',
       name: 'Дом 2 — Магазин — Офис 1',
-      stopIds: ['stop-lower-house', 'stop-shop', 'stop-upper-office'],
+      stopIds: ['stop-lower-house', 'stop-shop', 'stop-upper-office', 'stop-shop-south'],
     }),
   ]
 

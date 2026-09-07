@@ -45,8 +45,6 @@ describe('RoutePlanningSystem', () => {
       routeId: 'route-main',
       boardingStopId: 'stop-office',
       destinationStopId: 'stop-house',
-      boardingLegIndex: 1,
-      destinationLegIndex: 0,
     })
     expect(resident.transportDecision?.evaluatedBusId).toBe(bus.id)
   })

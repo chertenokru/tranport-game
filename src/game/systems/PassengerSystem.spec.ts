@@ -10,7 +10,7 @@ import { createIShapedWorld } from '@/game/world/createIShapedWorld'
 import { createResident } from '@/game/world/createResident'
 
 describe('PassengerSystem', () => {
-  it('boards only at the selected visit to a repeated stop', () => {
+  it('boards only at the stop for the selected direction', () => {
     const world = createIShapedWorld()
     const system = new PassengerSystem()
     const bus = world.buses.get('bus-route-upper-lower')!
@@ -26,8 +26,6 @@ describe('PassengerSystem', () => {
         routeId: bus.routeId,
         boardingStopId: shop.id,
         destinationStopId: 'stop-upper-house',
-        boardingLegIndex: 3,
-        destinationLegIndex: 0,
       },
     }
     world.residents.set(resident.id, resident)
@@ -44,7 +42,7 @@ describe('PassengerSystem', () => {
     expect(bus.passengerIds).toContain(resident.id)
   })
 
-  it('drops off only at the selected visit to a repeated stop', () => {
+  it('drops off only at the stop for the selected direction', () => {
     const world = createIShapedWorld()
     const system = new PassengerSystem()
     const bus = world.buses.get('bus-route-upper-lower')!
@@ -59,8 +57,6 @@ describe('PassengerSystem', () => {
         routeId: bus.routeId,
         boardingStopId: 'stop-upper-house',
         destinationStopId: shop.id,
-        boardingLegIndex: 0,
-        destinationLegIndex: 3,
       },
     }
     world.residents.set(resident.id, resident)

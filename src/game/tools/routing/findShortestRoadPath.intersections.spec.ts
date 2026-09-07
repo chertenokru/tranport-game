@@ -1,3 +1,4 @@
+import { prepareRoadGraph } from '@/game/tools/routing/prepareRoadGraph'
 import { describe, expect, it } from 'vitest'
 
 import { GameWorld } from '@/game/core/GameWorld.ts'
@@ -85,7 +86,7 @@ describe('findShortestRoadPath with intersections', () => {
   it('revisits an intersection from another side after an allowed U-turn', () => {
     const world = createWorld()
 
-    expect(findShortestRoadPath(world, 'start', 'destination')).toEqual([
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'start', 'destination')).toEqual([
       'start',
       'junction',
       'turnaround',
@@ -103,7 +104,7 @@ describe('findShortestRoadPath with intersections', () => {
     })
     world.intersections.delete('turnaround')
 
-    expect(findShortestRoadPath(world, 'start', 'destination')).toBeNull()
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'start', 'destination')).toBeNull()
   })
 
   it('finds a more expensive arrival from a side that permits the exit', () => {
@@ -130,7 +131,7 @@ describe('findShortestRoadPath with intersections', () => {
     addEdge(world, 'start', 'south', 30)
     addEdge(world, 'south', 'junction')
 
-    expect(findShortestRoadPath(world, 'start', 'destination')).toEqual([
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'start', 'destination')).toEqual([
       'start',
       'south',
       'junction',
@@ -141,10 +142,10 @@ describe('findShortestRoadPath with intersections', () => {
   it('requires an incoming node when starting at an intersection', () => {
     const world = createWorld()
 
-    expect(findShortestRoadPath(world, 'junction', 'destination')).toBeNull()
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'junction', 'destination')).toBeNull()
 
     expect(
-      findShortestRoadPath(world, 'junction', 'destination', {
+      findShortestRoadPath(prepareRoadGraph(world), 'junction', 'destination', {
         fromNodeId: 'turnaround',
       }),
     ).toEqual(['junction', 'destination'])
@@ -153,13 +154,15 @@ describe('findShortestRoadPath with intersections', () => {
   it('does not invent reverse edges', () => {
     const world = createWorld()
 
-    expect(findShortestRoadPath(world, 'destination', 'start')).toBeNull()
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'destination', 'start')).toBeNull()
   })
 
   it('continues from the actual incoming node', () => {
     const world = createWorld()
 
-    const path = findShortestRoadPath(world, 'junction', 'destination', { fromNodeId: 'start' })
+    const path = findShortestRoadPath(prepareRoadGraph(world), 'junction', 'destination', {
+      fromNodeId: 'start',
+    })
 
     expect(path).toEqual(['junction', 'turnaround', 'junction', 'destination'])
   })
@@ -167,7 +170,7 @@ describe('findShortestRoadPath with intersections', () => {
   it('reaches the destination through the required incoming node', () => {
     const world = createWorld()
 
-    const path = findShortestRoadPath(world, 'start', 'junction', {
+    const path = findShortestRoadPath(prepareRoadGraph(world), 'start', 'junction', {
       destinationFromNodeId: 'turnaround',
     })
 
@@ -177,7 +180,7 @@ describe('findShortestRoadPath with intersections', () => {
   it('can return to the same node from another side', () => {
     const world = createWorld()
 
-    const path = findShortestRoadPath(world, 'junction', 'junction', {
+    const path = findShortestRoadPath(prepareRoadGraph(world), 'junction', 'junction', {
       fromNodeId: 'start',
       destinationFromNodeId: 'turnaround',
     })
@@ -194,7 +197,7 @@ describe('findShortestRoadPath with intersections', () => {
       movements: new Map(),
     })
 
-    const path = findShortestRoadPath(world, 'start', 'junction', {
+    const path = findShortestRoadPath(prepareRoadGraph(world), 'start', 'junction', {
       destinationFromNodeId: 'turnaround',
     })
 
@@ -205,7 +208,7 @@ describe('findShortestRoadPath with intersections', () => {
     const world = createWorld()
 
     // Есть junction → destination, но нет обратного ребра.
-    const path = findShortestRoadPath(world, 'junction', 'destination', {
+    const path = findShortestRoadPath(prepareRoadGraph(world), 'junction', 'destination', {
       fromNodeId: 'destination',
     })
 

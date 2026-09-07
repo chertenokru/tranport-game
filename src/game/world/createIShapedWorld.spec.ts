@@ -1,3 +1,4 @@
+import { prepareRoadGraph } from '@/game/tools/routing/prepareRoadGraph'
 import { describe, expect, it } from 'vitest'
 
 import { Direction } from '@/game/domain/Direction'
@@ -5,14 +6,33 @@ import { findShortestRoadPath } from '@/game/tools/routing/findShortestRoadPath.
 import { createIShapedWorld } from './createIShapedWorld'
 import { BusState } from '@/game/domain/Bus.ts'
 import { BusMovementSystem } from '@/game/systems/BusMovementSystem.ts'
+import { getDirection } from '@/game/tools/geometry'
 
 const START = 'road-upper-left-start'
 const DESTINATION = 'road-lower-right-end'
 
 describe('createIShapedWorld', () => {
+  it('serves every stop once per cycle with the correct arrival and departure heading', () => {
+    const world = createIShapedWorld()
+    for (const route of world.routes.values()) {
+      expect(new Set(route.legs.map((leg) => leg.fromStopId)).size).toBe(route.legs.length)
+      for (const leg of route.legs) {
+        const departure = leg.path[1]!
+        const start = leg.path[0]!
+        const arrival = leg.path.at(-1)!
+        const previous = leg.path.at(-2)!
+        expect(getDirection({ x: departure.x - start.x, y: departure.y - start.y })).toBe(
+          world.stops.get(leg.fromStopId)!.travelDirection,
+        )
+        expect(getDirection({ x: arrival.x - previous.x, y: arrival.y - previous.y })).toBe(
+          world.stops.get(leg.toStopId)!.travelDirection,
+        )
+      }
+    }
+  })
   it('connects opposite branches through both intersections', () => {
     const world = createIShapedWorld()
-    const path = findShortestRoadPath(world, START, DESTINATION)
+    const path = findShortestRoadPath(prepareRoadGraph(world), START, DESTINATION)
 
     expect(path?.[0]).toBe(START)
     expect(path?.at(-1)).toBe(DESTINATION)
@@ -27,8 +47,8 @@ describe('createIShapedWorld', () => {
   it('supports the reverse journey on the bidirectional map', () => {
     const world = createIShapedWorld()
 
-    const forward = findShortestRoadPath(world, START, DESTINATION)
-    const backward = findShortestRoadPath(world, DESTINATION, START)
+    const forward = findShortestRoadPath(prepareRoadGraph(world), START, DESTINATION)
+    const backward = findShortestRoadPath(prepareRoadGraph(world), DESTINATION, START)
 
     expect(forward).not.toBeNull()
     expect(backward).toEqual(forward?.slice().reverse())
@@ -46,7 +66,7 @@ describe('createIShapedWorld', () => {
       movements,
     })
 
-    const path = findShortestRoadPath(world, START, DESTINATION)
+    const path = findShortestRoadPath(prepareRoadGraph(world), START, DESTINATION)
 
     const intersectionIds = path?.flatMap((nodeId) => {
       const intersectionId = world.roadNodes.get(nodeId)?.intersectionId
@@ -77,38 +97,31 @@ describe('createIShapedWorld', () => {
       }
     }
 
-    expect(findShortestRoadPath(world, START, DESTINATION)).toBeNull()
+    expect(findShortestRoadPath(prepareRoadGraph(world), START, DESTINATION)).toBeNull()
 
-    expect(findShortestRoadPath(world, DESTINATION, START)).not.toBeNull()
+    expect(findShortestRoadPath(prepareRoadGraph(world), DESTINATION, START)).not.toBeNull()
   })
 
   it('passes through stops along the connected roads', () => {
     const world = createIShapedWorld()
-    const path = findShortestRoadPath(world, START, DESTINATION)
+    const path = findShortestRoadPath(prepareRoadGraph(world), START, DESTINATION)
 
-    const stopIds = path?.flatMap((nodeId) => {
-      const stopId = world.roadNodes.get(nodeId)?.stopId
-      return stopId === undefined ? [] : [stopId]
-    })
-
-    expect(stopIds).toEqual(['stop-upper-house', 'stop-shop', 'stop-lower-office'])
+    expect(path).toEqual(
+      expect.arrayContaining(['node-stop-upper-house', 'node-stop-shop', 'node-stop-lower-office']),
+    )
   })
 
   it('connects every stop in both directions', () => {
     const world = createIShapedWorld()
 
-    expect(world.stops.size).toBe(5)
+    expect(world.stops.size).toBe(6)
 
     for (const stop of world.stops.values()) {
-      const nodes = [...world.roadNodes.values()].filter((node) => node.stopId === stop.id)
-
-      expect(nodes).toHaveLength(1)
-
-      const node = nodes[0]!
+      const node = world.roadNodes.get(stop.roadNodeId)!
 
       expect(node.position).toEqual(stop.vehiclePosition)
-      expect(findShortestRoadPath(world, START, node.id)).not.toBeNull()
-      expect(findShortestRoadPath(world, node.id, START)).not.toBeNull()
+      expect(findShortestRoadPath(prepareRoadGraph(world), START, node.id)).not.toBeNull()
+      expect(findShortestRoadPath(prepareRoadGraph(world), node.id, START)).not.toBeNull()
     }
   })
   it.each(['route-upper-lower', 'route-lower-upper'])('completes a round trip on %s', (routeId) => {

@@ -1,3 +1,4 @@
+import { prepareRoadGraph } from '@/game/tools/routing/prepareRoadGraph'
 import { findShortestRoadPath } from '@/game/tools/routing/findShortestRoadPath.ts'
 import { GameWorld } from '@/game/core/GameWorld.ts'
 import { describe, expect, it } from 'vitest'
@@ -7,25 +8,25 @@ describe('findShortestRoadPath', () => {
   it('finds the forward path', () => {
     const world = createVerticalSliceWorld()
 
-    expect(findShortestRoadPath(world, 'node-stop-house', 'node-stop-office')).toEqual([
-      'node-stop-house',
-      'node-stop-office',
-    ])
+    expect(
+      findShortestRoadPath(prepareRoadGraph(world), 'node-stop-house', 'node-stop-office'),
+    ).toEqual(['node-stop-house', 'node-stop-office'])
   })
 
   it('finds the reverse path', () => {
     const world = createVerticalSliceWorld()
 
-    expect(findShortestRoadPath(world, 'node-stop-office', 'node-stop-house')).toEqual([
-      'node-stop-office',
-      'node-stop-house',
-    ])
+    expect(
+      findShortestRoadPath(prepareRoadGraph(world), 'node-stop-office', 'node-stop-house'),
+    ).toEqual(['node-stop-office', 'node-stop-house'])
   })
 
   it('returns null for an unknown node', () => {
     const world = createVerticalSliceWorld()
 
-    expect(findShortestRoadPath(world, 'unknown-node', 'node-stop-office')).toBeNull()
+    expect(
+      findShortestRoadPath(prepareRoadGraph(world), 'unknown-node', 'node-stop-office'),
+    ).toBeNull()
   })
 
   it('returns null when a destination is unreachable', () => {
@@ -39,7 +40,9 @@ describe('findShortestRoadPath', () => {
       },
     })
 
-    expect(findShortestRoadPath(world, 'node-stop-house', 'isolated-node')).toBeNull()
+    expect(
+      findShortestRoadPath(prepareRoadGraph(world), 'node-stop-house', 'isolated-node'),
+    ).toBeNull()
   })
   it('replaces an earlier path with a cheaper alternative', () => {
     const world = new GameWorld()
@@ -96,6 +99,6 @@ describe('findShortestRoadPath', () => {
       traversalCost: 1,
     })
 
-    expect(findShortestRoadPath(world, 'A', 'D')).toEqual(['A', 'C', 'D'])
+    expect(findShortestRoadPath(prepareRoadGraph(world), 'A', 'D')).toEqual(['A', 'C', 'D'])
   })
 })

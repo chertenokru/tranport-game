@@ -6,8 +6,8 @@ import { estimateBusBoarding } from './estimateBusBoarding'
 export interface BestBusOptionInput {
   readonly buses: readonly Bus[]
   readonly route: BusRoute
-  readonly boardingLegIndex: number
-  readonly destinationLegIndex: number
+  readonly boardingStopIndex: number
+  readonly alightingStopIndex: number
   readonly passengerArrivalTime: number
 }
 
@@ -22,30 +22,30 @@ export interface BusTravelOption {
 }
 
 export function findBestBusOption(input: BestBusOptionInput): BusTravelOption | null {
-  const { route, boardingLegIndex, destinationLegIndex } = input
+  const { route, boardingStopIndex, alightingStopIndex } = input
   const count = route.legs.length
   if (
     count < 2 ||
-    !Number.isInteger(boardingLegIndex) ||
-    !route.legs[boardingLegIndex] ||
-    !Number.isInteger(destinationLegIndex) ||
-    !route.legs[destinationLegIndex] ||
-    boardingLegIndex === destinationLegIndex
+    !Number.isInteger(boardingStopIndex) ||
+    !route.legs[boardingStopIndex] ||
+    !Number.isInteger(alightingStopIndex) ||
+    !route.legs[alightingStopIndex] ||
+    boardingStopIndex === alightingStopIndex
   ) {
-    throw new RangeError('Invalid bus journey leg indexes')
+    throw new RangeError('Invalid bus journey stop indexes')
   }
 
-  const legCount = (destinationLegIndex - boardingLegIndex + count) % count
+  const legCount = (alightingStopIndex - boardingStopIndex + count) % count
   let distance = 0
   for (let offset = 0; offset < legCount; offset += 1) {
-    distance += route.legs[(boardingLegIndex + offset) % count]!.distance
+    distance += route.legs[(boardingStopIndex + offset) % count]!.distance
   }
 
   let bestOption: BusTravelOption | null = null
   for (const bus of input.buses) {
     if (bus.routeId !== route.id) continue
     if (
-      bus.legIndex === boardingLegIndex &&
+      bus.legIndex === boardingStopIndex &&
       bus.state === BusState.WaitingAtStop &&
       bus.passengerIds.length >= bus.capacity
     )
@@ -54,7 +54,7 @@ export function findBestBusOption(input: BestBusOptionInput): BusTravelOption | 
     const estimate = estimateBusBoarding({
       bus,
       route,
-      boardingLegIndex,
+      boardingStopIndex,
       passengerArrivalTime: input.passengerArrivalTime,
     })
     if (!estimate) continue

@@ -3,16 +3,14 @@ import type { BusRoute } from '@/game/domain/BusRoute'
 import type { BusStopId, RouteId } from '@/game/domain/ids'
 import { buildRouteLegs } from './buildRouteLegs'
 
-export interface ShuttleRouteDefinition {
+export interface BusRouteDefinition {
   readonly id: RouteId
   readonly name: string
   readonly stopIds: readonly BusStopId[]
 }
 
-export function createShuttleRoute(world: GameWorld, definition: ShuttleRouteDefinition): BusRoute {
-  const stopIds = [...definition.stopIds]
-  const cycleStopIds = [...stopIds, ...stopIds.slice(1, -1).reverse()]
-  const legs = buildRouteLegs(world, cycleStopIds)
+export function createBusRoute(world: GameWorld, definition: BusRouteDefinition): BusRoute {
+  const legs = buildRouteLegs(world, definition.stopIds)
 
   if (!legs) {
     throw new Error(`Cannot build a complete cycle for route "${definition.id}"`)

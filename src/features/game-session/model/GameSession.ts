@@ -1,9 +1,7 @@
 import { GameEngine } from '@/game/core/GameEngine'
 import type { GameRenderer } from '@/game/rendering/GameRenderer'
 import { createVerticalSliceWorld } from '@/game/world/MapFactory'
-import { BusMovementSystem } from '@/game/systems/BusMovementSystem.ts'
-import { PedestrianMovementSystem } from '@/game/systems/PedestrianMovementSystem.ts'
-import { PassengerSystem } from '@/game/systems/PassengerSystem.ts'
+import { TransportSystem } from '@/game/systems/TransportSystem'
 import { EconomySystem } from '@/game/systems/EconomySystem.ts'
 import { RoutePlanningSystem } from '@/game/systems/routePlanning/RoutePlanningSystem.ts'
 import { PopulationSystem } from '@/game/systems/PopulationSystem'
@@ -34,9 +32,7 @@ export class GameSession {
       new GameEngine(this.worldFactory(), [
         new PopulationSystem(),
         new RoutePlanningSystem(),
-        new PedestrianMovementSystem(),
-        new BusMovementSystem(),
-        new PassengerSystem(),
+        new TransportSystem(),
         new EconomySystem(),
         new ResidentArrivalSystem(),
       ])

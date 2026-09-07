@@ -62,8 +62,8 @@ export class RoutePlanningSystem implements GameSystem {
           const busOption = findBestBusOption({
             buses,
             route,
-            boardingLegIndex: boardingIndex,
-            destinationLegIndex: destinationIndex,
+            boardingStopIndex: boardingIndex,
+            alightingStopIndex: destinationIndex,
             passengerArrivalTime: walkingToStopDistance / resident.walkingSpeed,
           })
           if (!busOption) continue
@@ -84,8 +84,6 @@ export class RoutePlanningSystem implements GameSystem {
                 routeId: route.id,
                 boardingStopId: boardingStop.id,
                 destinationStopId: destinationStop.id,
-                boardingLegIndex: boardingIndex,
-                destinationLegIndex: destinationIndex,
               },
               boardingPosition: boardingStop.waitingPosition,
               busId: busOption.busId,

@@ -6,7 +6,7 @@ import { createVerticalSliceWorld } from '@/game/world/MapFactory'
 
 import { BusMovementSystem } from './BusMovementSystem'
 import { PassengerSystem } from './PassengerSystem'
-import { PedestrianMovementSystem } from './PedestrianMovementSystem'
+import { TransportSystem } from './TransportSystem'
 import { RoutePlanningSystem } from './routePlanning/RoutePlanningSystem.ts'
 import { BusState } from '@/game/domain/Bus'
 import { ResidentState } from '@/game/domain/Resident'
@@ -44,8 +44,6 @@ function createWaitingGroup() {
         routeId: 'route-main',
         boardingStopId: stop.id,
         destinationStopId: 'stop-office',
-        boardingLegIndex: 0,
-        destinationLegIndex: 1,
       },
     }
     world.residents.set(resident.id, resident)
@@ -71,12 +69,7 @@ describe('Replanning after a full bus', () => {
     const { world, bus, overflow } = createWaitingGroup()
     // Keep the same system order as GameSession. Population generation and arrival
     // cleanup are irrelevant to this two-second boarding scenario.
-    const engine = new GameEngine(world, [
-      new RoutePlanningSystem(),
-      new PedestrianMovementSystem(),
-      new BusMovementSystem(),
-      new PassengerSystem(),
-    ])
+    const engine = new GameEngine(world, [new RoutePlanningSystem(), new TransportSystem()])
     engine.start()
     engine.update(0)
 

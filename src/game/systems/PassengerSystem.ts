@@ -10,26 +10,30 @@ export class PassengerSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     void deltaSeconds
     for (const bus of world.buses.values()) {
-      if (bus.state !== BusState.WaitingAtStop) {
-        continue
-      }
-
-      const route = world.routes.get(bus.routeId)
-
-      if (!route) {
-        continue
-      }
-
-      const currentStopId = route.legs[bus.legIndex]?.fromStopId
-
-      if (!currentStopId) {
-        continue
-      }
-
-      this.dropOffPassengers(world, bus, currentStopId)
-
-      this.boardPassengers(world, bus, route, currentStopId)
+      this.serviceStop(world, bus)
     }
+  }
+
+  serviceStop(world: GameWorld, bus: Bus): void {
+    if (bus.state !== BusState.WaitingAtStop) {
+      return
+    }
+
+    const route = world.routes.get(bus.routeId)
+
+    if (!route) {
+      return
+    }
+
+    const currentStopId = route.legs[bus.legIndex]?.fromStopId
+
+    if (!currentStopId) {
+      return
+    }
+
+    this.dropOffPassengers(world, bus, currentStopId)
+
+    this.boardPassengers(world, bus, route, currentStopId)
   }
 
   private dropOffPassengers(world: GameWorld, bus: Bus, currentStopId: BusStopId): void {
@@ -47,7 +51,6 @@ export class PassengerSystem implements GameSystem {
         !resident ||
         !journey ||
         journey.transit?.routeId !== bus.routeId ||
-        journey.transit.destinationLegIndex !== bus.legIndex ||
         journey.transit.destinationStopId !== currentStopId
       ) {
         continue
@@ -83,19 +86,13 @@ export class PassengerSystem implements GameSystem {
         resident.state !== ResidentState.WaitingBus ||
         !transit ||
         transit.routeId !== route.id ||
-        transit.boardingStopId !== currentStopId ||
-        transit.boardingLegIndex !== bus.legIndex
+        transit.boardingStopId !== currentStopId
       ) {
         continue
       }
 
-      const destinationLeg = route.legs[transit.destinationLegIndex]
-      if (
-        !destinationLeg ||
-        destinationLeg.fromStopId !== transit.destinationStopId ||
-        transit.destinationLegIndex === transit.boardingLegIndex
-      )
-        continue
+      const destinationLeg = route.legs.find((leg) => leg.fromStopId === transit.destinationStopId)
+      if (!destinationLeg || transit.destinationStopId === transit.boardingStopId) continue
 
       if (bus.passengerIds.length >= bus.capacity) {
         resident.state = ResidentState.ChoosingTransport

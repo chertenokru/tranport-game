@@ -1,45 +1,45 @@
-import type { GameWorld } from '@/game/core/GameWorld.ts'
+import type { RoadGraph } from './prepareRoadGraph'
 import type { Intersection } from '@/game/domain/Intersection.ts'
-import type { MapEdge } from '@/game/world/MapEdge.ts'
 import type { MapNode, MapNodeId } from '@/game/world/MapNode.ts'
 import { getIntersectionExits } from '@/game/tools/getIntersectionExits.ts'
+import type { Direction } from '@/game/domain/Direction'
+import { getDirection } from '@/game/tools/geometry'
 
 export interface RoadPathOptions {
   readonly fromNodeId?: MapNodeId
   readonly destinationFromNodeId?: MapNodeId
+  readonly startDirection?: Direction
 }
 
 interface SearchState {
   readonly nodeId: MapNodeId
   readonly fromNodeId: MapNodeId | null
 
-  distance: number
+  cost: number
   previous: SearchState | null
 }
 
 export function findShortestRoadPath(
-  world: GameWorld,
+  graph: RoadGraph,
   startId: MapNodeId,
   destinationId: MapNodeId,
   options: RoadPathOptions = {},
 ): MapNodeId[] | null {
   const { fromNodeId, destinationFromNodeId } = options
 
-  const startNode = world.roadNodes.get(startId)
+  const startNode = graph.roadNodes.get(startId)
 
-  if (!startNode || !world.roadNodes.has(destinationId)) {
+  if (!startNode || !graph.roadNodes.has(destinationId)) {
     return null
   }
 
-  const startIntersection = getIntersection(world, startNode)
+  const startIntersection = getIntersection(graph, startNode)
   const initialFromNodeId: MapNodeId | null = fromNodeId ?? null
 
   if (fromNodeId !== undefined) {
-    const hasIncomingEdge = [...world.roadEdges.values()].some(
-      (edge) => edge.from === fromNodeId && edge.to === startId,
-    )
+    const hasIncomingEdge = graph.incoming.get(startId)?.has(fromNodeId)
 
-    if (!world.roadNodes.has(fromNodeId) || !hasIncomingEdge) {
+    if (!graph.roadNodes.has(fromNodeId) || !hasIncomingEdge) {
       return null
     }
   }
@@ -53,18 +53,6 @@ export function findShortestRoadPath(
       return null
     }
   }
-  const outgoingEdges = new Map<MapNodeId, MapEdge[]>()
-
-  for (const edge of world.roadEdges.values()) {
-    if (!Number.isFinite(edge.traversalCost) || edge.traversalCost < 0) {
-      throw new RangeError('Road edge cost must be finite and non-negative')
-    }
-
-    const edges = outgoingEdges.get(edge.from) ?? []
-    edges.push(edge)
-    outgoingEdges.set(edge.from, edges)
-  }
-
   const states = new Map<string, SearchState>()
   const pending = new Set<SearchState>()
 
@@ -76,7 +64,7 @@ export function findShortestRoadPath(
       state = {
         nodeId,
         fromNodeId,
-        distance: Number.POSITIVE_INFINITY,
+        cost: Number.POSITIVE_INFINITY,
         previous: null,
       }
 
@@ -87,14 +75,14 @@ export function findShortestRoadPath(
   }
 
   const initial = getState(startId, initialFromNodeId)
-  initial.distance = 0
+  initial.cost = 0
   pending.add(initial)
 
   while (pending.size > 0) {
     let current: SearchState | null = null
 
     for (const candidate of pending) {
-      if (!current || candidate.distance < current.distance) {
+      if (!current || candidate.cost < current.cost) {
         current = candidate
       }
     }
@@ -114,9 +102,9 @@ export function findShortestRoadPath(
       return reconstructPath(current)
     }
 
-    const node = world.roadNodes.get(current.nodeId)!
+    const node = graph.roadNodes.get(current.nodeId)!
 
-    const intersection = getIntersection(world, node)
+    const intersection = getIntersection(graph, node)
     let allowedTargets: Set<MapNodeId> | null = null
 
     if (intersection) {
@@ -132,9 +120,17 @@ export function findShortestRoadPath(
       allowedTargets = new Set(exits.map((exit) => exit.nextNodeId))
     }
 
-    for (const edge of outgoingEdges.get(current.nodeId) ?? []) {
-      if (!world.roadNodes.has(edge.to)) {
+    for (const edge of graph.outgoing.get(current.nodeId) ?? []) {
+      if (!graph.roadNodes.has(edge.to)) {
         continue
+      }
+      if (current === initial && options.startDirection !== undefined) {
+        const target = graph.roadNodes.get(edge.to)!
+        const direction = getDirection({
+          x: target.position.x - node.position.x,
+          y: target.position.y - node.position.y,
+        })
+        if (direction !== options.startDirection) continue
       }
       if (allowedTargets !== null && !allowedTargets.has(edge.to)) {
         continue
@@ -147,13 +143,13 @@ export function findShortestRoadPath(
       }
 
       const next = getState(edge.to, current.nodeId)
-      const distance = current.distance + edge.traversalCost
+      const cost = current.cost + edge.traversalCost
 
-      if (distance >= next.distance) {
+      if (cost >= next.cost) {
         continue
       }
 
-      next.distance = distance
+      next.cost = cost
       next.previous = current
       pending.add(next)
     }
@@ -162,12 +158,12 @@ export function findShortestRoadPath(
   return null
 }
 
-function getIntersection(world: GameWorld, node: MapNode): Intersection | null {
+function getIntersection(graph: RoadGraph, node: MapNode): Intersection | null {
   if (node.intersectionId === undefined) {
     return null
   }
 
-  const intersection = world.intersections.get(node.intersectionId)
+  const intersection = graph.intersections.get(node.intersectionId)
 
   if (!intersection) {
     throw new Error(`Node "${node.id}" references missing intersection "${node.intersectionId}"`)

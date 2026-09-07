@@ -16,14 +16,14 @@ describe('findBestBusOption', () => {
     const option = findBestBusOption({
       buses: [bus],
       route,
-      boardingLegIndex: 3,
-      destinationLegIndex: 0,
+      boardingStopIndex: 3,
+      alightingStopIndex: 0,
       passengerArrivalTime: 0,
     })!
 
-    expect(option.movementTime).toBeCloseTo(8.9)
+    expect(option.movementTime).toBeCloseTo(7.3)
     expect(option.intermediateStopTime).toBe(0)
-    expect(option.busTravelTime).toBeCloseTo(9.9)
+    expect(option.busTravelTime).toBeCloseTo(8.3)
   })
 
   it('selects the bus with the best predicted journey time', () => {
@@ -36,8 +36,8 @@ describe('findBestBusOption', () => {
     const option = findBestBusOption({
       buses,
       route: world.routes.get('route-main')!,
-      boardingLegIndex: 0,
-      destinationLegIndex: 1,
+      boardingStopIndex: 0,
+      alightingStopIndex: 1,
       passengerArrivalTime: 3,
     })
 
@@ -57,8 +57,8 @@ describe('findBestBusOption', () => {
     const option = findBestBusOption({
       buses: [],
       route: world.routes.get('route-main')!,
-      boardingLegIndex: 0,
-      destinationLegIndex: 1,
+      boardingStopIndex: 0,
+      alightingStopIndex: 1,
       passengerArrivalTime: 3,
     })
 

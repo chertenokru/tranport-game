@@ -5,7 +5,7 @@ import { calculateRemainingPathDistance } from '@/game/systems/tools/movement/ca
 export interface BusBoardingInput {
   readonly bus: Bus
   readonly route: BusRoute
-  readonly boardingLegIndex: number
+  readonly boardingStopIndex: number
   readonly passengerArrivalTime: number
 }
 
@@ -17,7 +17,7 @@ export interface BusBoardingEstimate {
 export function estimateBusBoarding({
   bus,
   route,
-  boardingLegIndex,
+  boardingStopIndex,
   passengerArrivalTime,
 }: BusBoardingInput): BusBoardingEstimate | null {
   const count = route.legs.length
@@ -26,8 +26,8 @@ export function estimateBusBoarding({
     bus.routeId !== route.id ||
     !Number.isInteger(bus.legIndex) ||
     !route.legs[bus.legIndex] ||
-    !Number.isInteger(boardingLegIndex) ||
-    !route.legs[boardingLegIndex] ||
+    !Number.isInteger(boardingStopIndex) ||
+    !route.legs[boardingStopIndex] ||
     !Number.isFinite(passengerArrivalTime) ||
     passengerArrivalTime < 0 ||
     !Number.isFinite(bus.speed) ||
@@ -35,8 +35,7 @@ export function estimateBusBoarding({
     !Number.isFinite(bus.stopWaitSeconds) ||
     bus.stopWaitSeconds < 0 ||
     !Number.isFinite(bus.waitingSecondsRemaining) ||
-    bus.waitingSecondsRemaining < 0 ||
-    route.legs.some((leg) => !Number.isFinite(leg.distance) || leg.distance < 0)
+    bus.waitingSecondsRemaining < 0
   ) {
     throw new RangeError('Invalid bus waiting time input')
   }
@@ -60,8 +59,8 @@ export function estimateBusBoarding({
     stopTime = bus.stopWaitSeconds
   }
 
-  // ?? ??????? ????????? ????????? ? ?? ?????? ?????? ?????.
-  while (legIndex !== boardingLegIndex) {
+  // До ближайшего прибытия на выбранную остановку.
+  while (legIndex !== boardingStopIndex) {
     arrivalTime += stopTime + route.legs[legIndex]!.distance / bus.speed
     legIndex = (legIndex + 1) % count
     stopTime = bus.stopWaitSeconds

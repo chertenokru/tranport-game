@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
 import { createIShapedWorld } from '@/game/world/createIShapedWorld'
-import { createShuttleRoute } from './createShuttleRoute'
+import { createBusRoute } from './createBusRoute'
 
 const definition = {
   id: 'route-test',
   name: 'Test route',
-  stopIds: ['stop-upper-house', 'stop-shop', 'stop-lower-office'],
+  stopIds: ['stop-upper-house', 'stop-shop-south', 'stop-lower-office', 'stop-shop'],
 }
 
-describe('createShuttleRoute', () => {
+describe('createBusRoute', () => {
   it('prepares both directions including terminal turnarounds', () => {
-    const route = createShuttleRoute(createIShapedWorld(), definition)
+    const route = createBusRoute(createIShapedWorld(), definition)
 
     expect(route.legs.map((leg) => [leg.fromStopId, leg.toStopId])).toEqual([
-      ['stop-upper-house', 'stop-shop'],
-      ['stop-shop', 'stop-lower-office'],
+      ['stop-upper-house', 'stop-shop-south'],
+      ['stop-shop-south', 'stop-lower-office'],
       ['stop-lower-office', 'stop-shop'],
       ['stop-shop', 'stop-upper-house'],
     ])
@@ -31,7 +31,7 @@ describe('createShuttleRoute', () => {
       movements: new Map(),
     })
 
-    expect(() => createShuttleRoute(world, definition)).toThrow(
+    expect(() => createBusRoute(world, definition)).toThrow(
       'Cannot build a complete cycle for route "route-test"',
     )
   })

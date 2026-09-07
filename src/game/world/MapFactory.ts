@@ -4,7 +4,7 @@ import type { BusStop } from '@/game/domain/BusStop'
 import type { Road } from '@/game/domain/Road.ts'
 import type { MapNode } from '@/game/world/MapNode.ts'
 import type { MapEdge } from '@/game/world/MapEdge.ts'
-import { createShuttleRoute } from '@/game/tools/routing/createShuttleRoute'
+import { createBusRoute } from '@/game/tools/routing/createBusRoute'
 import { createBus } from './createBus'
 import { VEHICLES_CONFIG } from '@/game/config/vehicles.config.ts'
 import { Direction } from '@/game/domain/Direction.ts'
@@ -33,6 +33,8 @@ export function createVerticalSliceWorld(): GameWorld {
 
   const houseStop: BusStop = {
     id: 'stop-house',
+    roadNodeId: 'node-stop-house',
+    travelDirection: Direction.West,
     name: 'Жилой квартал',
     direction: Direction.South,
     vehiclePosition: { x: 260, y: 340 },
@@ -41,10 +43,12 @@ export function createVerticalSliceWorld(): GameWorld {
 
   const officeStop: BusStop = {
     id: 'stop-office',
+    roadNodeId: 'node-stop-office',
+    travelDirection: Direction.East,
     name: 'Деловой центр',
-    direction: Direction.South,
+    direction: Direction.North,
     vehiclePosition: { x: 700, y: 340 },
-    waitingPosition: { x: 700, y: 296 },
+    waitingPosition: { x: 700, y: 384 },
   }
 
   const mainRoad: Road = {
@@ -58,13 +62,11 @@ export function createVerticalSliceWorld(): GameWorld {
   const houseStopNode: MapNode = {
     id: 'node-stop-house',
     position: houseStop.vehiclePosition,
-    stopId: houseStop.id,
   }
 
   const officeStopNode: MapNode = {
     id: 'node-stop-office',
     position: officeStop.vehiclePosition,
-    stopId: officeStop.id,
   }
 
   const houseToOfficeEdge: MapEdge = {
@@ -136,7 +138,7 @@ export function createVerticalSliceWorld(): GameWorld {
     })
   }
 
-  const mainRoute = createShuttleRoute(world, {
+  const mainRoute = createBusRoute(world, {
     id: 'route-main',
     name: 'Маршрут 1',
     stopIds: [houseStop.id, officeStop.id],
