@@ -24,4 +24,5 @@ export interface Bus {
   direction: Direction
   pathIndex: number
   waitingSecondsRemaining: number
+  collisionCount: number
 }

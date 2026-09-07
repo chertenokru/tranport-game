@@ -9,6 +9,7 @@ import { GameSession } from './GameSession'
 import type { GameRenderer } from '@/game/rendering/GameRenderer.ts'
 import { ResidentState } from '@/game/domain/Resident'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
+import { Direction } from '@/game/domain/Direction'
 
 describe('GameSession', () => {
   afterEach(() => vi.restoreAllMocks())
@@ -132,11 +133,20 @@ describe('GameSession', () => {
       waitingSecondsRemaining: 4,
     })
 
-    const destination = session.engine.world.buildings.get(resident.journey!.destinationBuildingId)
+    const originalDestination = session.engine.world.buildings.get(
+      resident.journey!.destinationBuildingId,
+    )
 
-    if (!destination) {
+    if (!originalDestination) {
       throw new Error('Destination building is missing')
     }
+    // This test covers successful delivery without an unprotected road crossing.
+    const destination = {
+      ...originalDestination,
+      position: { x: 820, y: 450 },
+      direction: Direction.North,
+    }
+    session.engine.world.buildings.set(destination.id, destination)
 
     const visitedStates = new Set([resident.state])
 

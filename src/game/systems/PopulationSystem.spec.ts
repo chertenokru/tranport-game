@@ -35,6 +35,18 @@ function config(overrides: Partial<PopulationConfig> = {}): PopulationConfig {
 }
 
 describe('PopulationSystem', () => {
+  it('does not let dead residents exhaust the living population limit', () => {
+    const world = createVerticalSliceWorld()
+    const victim = createResident('victim', world.buildings.get('building-house')!)
+    victim.state = ResidentState.Dead
+    world.residents.set(victim.id, victim)
+    const system = new PopulationSystem(config({ maxResidents: 1 }), () => 0)
+    system.update(world, 0)
+    expect(world.residents.size).toBe(2)
+    expect(victim.state).toBe(ResidentState.Dead)
+    system.update(world, 10)
+    expect(world.residents.size).toBe(2)
+  })
   it('spawns one resident at startup and on each cycle, selecting a different building', () => {
     const world = createVerticalSliceWorld()
     const system = new PopulationSystem(config(), () => 0)

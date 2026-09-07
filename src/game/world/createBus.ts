@@ -50,5 +50,6 @@ export function createBus(
     direction,
     pathIndex: 0,
     waitingSecondsRemaining: vehicle.stopWaitSeconds,
+    collisionCount: 0,
   }
 }

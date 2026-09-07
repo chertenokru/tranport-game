@@ -1,15 +1,13 @@
 import type { Bus } from '@/game/domain/Bus'
-import { getDirectionAngle, localToWorld } from '@/game/tools/geometry'
-
-// Пока смещение относительно оси дороги только визуальное.
-// Позже положение на полосе будет задавать сама траектория.
-const LANE_OFFSET = 16
+import { getDirectionAngle } from '@/game/tools/geometry'
+import { getVehicleBounds } from '@/game/tools/getVehicleBounds'
 
 export function drawBus(context: CanvasRenderingContext2D, bus: Readonly<Bus>): void {
   const halfLength = bus.size.x / 2
   const halfWidth = bus.size.y / 2
 
-  const center = localToWorld({ x: -LANE_OFFSET, y: 0 }, bus.position, bus.direction)
+  const bounds = getVehicleBounds(bus)
+  const center = bounds.position
 
   context.save()
 
@@ -47,6 +45,13 @@ export function drawBus(context: CanvasRenderingContext2D, bus: Readonly<Bus>): 
     context.textBaseline = 'middle'
     context.fillStyle = '#2b35bc'
     context.fillText(`×${bus.passengerIds.length}`, center.x, center.y)
+    if (bus.collisionCount > 0) {
+      const top = center.y - bounds.halfSize.y - 12
+      context.fillStyle = '#7f1d1d'
+      context.fillRect(center.x - 20, top - 8, 40, 16)
+      context.fillStyle = '#fef08a'
+      context.fillText(`! ${bus.collisionCount}`, center.x, top)
+    }
   } finally {
     context.restore()
   }

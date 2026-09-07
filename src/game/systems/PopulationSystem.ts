@@ -39,7 +39,10 @@ export class PopulationSystem implements GameSystem {
   }
 
   private spawnResidents(world: GameWorld): void {
-    const availableSlots = this.config.maxResidents - world.residents.size
+    const livingResidents = [...world.residents.values()].filter(
+      (resident) => resident.state !== ResidentState.Dead,
+    ).length
+    const availableSlots = this.config.maxResidents - livingResidents
     const buildings = [...world.buildings.values()]
     if (availableSlots <= 0 || buildings.length === 0) return
 

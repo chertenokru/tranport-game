@@ -20,7 +20,7 @@ export function drawRoad(context: CanvasRenderingContext2D, road: Readonly<Road>
     context.strokeStyle = '#f8fafc'
     context.lineWidth = 2
     context.lineCap = 'butt'
-    context.setLineDash([16, 12])
+    context.setLineDash([])
     context.stroke()
   } finally {
     context.restore()

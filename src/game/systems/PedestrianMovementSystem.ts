@@ -3,18 +3,12 @@ import type { GameWorld } from '@/game/core/GameWorld'
 import { type Resident, ResidentState } from '@/game/domain/Resident'
 
 import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath'
-
-const MOVING_STATES: ReadonlySet<ResidentState> = new Set([
-  ResidentState.Walking,
-  ResidentState.WalkingToStop,
-  ResidentState.WalkingFromStop,
-  ResidentState.CrossingRoad,
-])
+import { isResidentWalking } from './tools/movement/isResidentWalking'
 
 export class PedestrianMovementSystem implements GameSystem {
   update(world: GameWorld, deltaSeconds: number): void {
     for (const resident of world.residents.values()) {
-      if (!MOVING_STATES.has(resident.state)) {
+      if (!isResidentWalking(resident.state)) {
         continue
       }
 

@@ -11,6 +11,7 @@ import { drawBuilding } from '@/game/rendering/drawsLayers/drawBuilding'
 import { drawBusStop } from '@/game/rendering/drawsLayers/drawBusStop'
 import { drawBus } from '@/game/rendering/drawsLayers/drawBus'
 import { drawResidentGroup } from '@/game/rendering/drawsLayers/drawResidentGroup'
+import { drawDeadResident } from '@/game/rendering/drawsLayers/drawDeadResident'
 import { drawDecisionIndicator } from '@/game/rendering/drawsLayers/drawDecisionIndicator'
 import { drawDebugInformation } from '@/game/rendering/drawsLayers/drawDebugInformation'
 
@@ -84,6 +85,10 @@ export function createCanvasRenderer(canvas: HTMLCanvasElement): CanvasGameRende
     indicators.update(world.residents.values(), frame.timeMs)
 
     const groups = groupVisibleResidents(world.residents.values())
+
+    for (const resident of world.residents.values()) {
+      if (resident.state === ResidentState.Dead) drawDeadResident(frame.context, resident)
+    }
 
     for (const group of groups) {
       drawResidentGroup(frame.context, group[0]!, group.length)
