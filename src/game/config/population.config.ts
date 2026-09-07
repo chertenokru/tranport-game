@@ -8,10 +8,10 @@ export interface PopulationConfig {
 }
 
 export const POPULATION_CONFIG = {
-  cycleIntervalSeconds: 8,
-  maxResidents: 100,
-  groupProbability: 0.6,
+  cycleIntervalSeconds: 4,
+  maxResidents: 200,
+  groupProbability: 0.9,
   minGroupSize: 5,
-  maxGroupSize: 15,
-  retentionProbability: 0.35,
+  maxGroupSize: 30,
+  retentionProbability: 0.5,
 } as const satisfies PopulationConfig

@@ -33,7 +33,7 @@ describe('pedestrian collisions during transport', () => {
     expect(world.accidents).toBe(1)
   })
 
-  it('detects a pedestrian walking into a stationary bus after alighting', () => {
+  it('stops a pedestrian before a stationary bus and resumes after it leaves', () => {
     const { world, bus, resident } = createScene()
     bus.position = { x: 700, y: 340 }
     bus.legIndex = 1
@@ -44,10 +44,36 @@ describe('pedestrian collisions during transport', () => {
     resident.path = [{ x: 700, y: 280 }]
     resident.pathIndex = 0
     new TransportSystem().update(world, 1)
-    expect(resident.state).toBe(ResidentState.Dead)
-    expect(resident.position.y).toBeCloseTo(374)
+    expect(resident.state).toBe(ResidentState.WalkingFromStop)
+    expect(resident.position.y).toBeCloseTo(379)
+    expect(world.accidents).toBe(0)
     expect(bus.position).toEqual({ x: 700, y: 340 })
     expect(bus.waitingSecondsRemaining).toBe(1)
+
+    world.buses.delete(bus.id)
+    new TransportSystem().update(world, 1)
+    expect(resident.position.y).toBeLessThan(379)
+  })
+
+  it('does not kill a pedestrian who approaches a bus as it drives away', () => {
+    const { world, bus, resident } = createScene()
+    const route = world.routes.get(bus.routeId)!
+    world.routes.set(route.id, {
+      ...route,
+      legs: [{ ...route.legs[0]!, path: [{ x: 700, y: 340 }, { x: 800, y: 340 }] }, ...route.legs.slice(1)],
+    })
+    bus.position = { x: 700, y: 340 }
+    bus.pathIndex = 1
+    resident.state = ResidentState.Walking
+    resident.position = { x: 700, y: 384 }
+    resident.path = [{ x: 700, y: 280 }]
+    resident.pathIndex = 0
+
+    new TransportSystem().update(world, 1)
+
+    expect(resident.state).toBe(ResidentState.Walking)
+    expect(world.accidents).toBe(0)
+    expect(bus.position.x).toBeGreaterThan(700)
   })
 
   it('kills a pedestrian crossed between frames and lets the bus continue', () => {

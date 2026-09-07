@@ -1,18 +1,23 @@
 import type { GameSystem } from '@/game/core/GameSystem'
 import type { GameWorld } from '@/game/core/GameWorld'
 import { type Resident, ResidentState } from '@/game/domain/Resident'
+import type { ResidentId } from '@/game/domain/ids'
 
 import { moveAlongPath } from '@/game/systems/tools/movement/moveAlongPath'
 import { isResidentWalking } from './tools/movement/isResidentWalking'
 
 export class PedestrianMovementSystem implements GameSystem {
-  update(world: GameWorld, deltaSeconds: number): void {
+  update(
+    world: GameWorld,
+    deltaSeconds: number,
+    allowedDurations: ReadonlyMap<ResidentId, number> = new Map(),
+  ): void {
     for (const resident of world.residents.values()) {
       if (!isResidentWalking(resident.state)) {
         continue
       }
 
-      this.movePedestrian(world, resident, deltaSeconds)
+      this.movePedestrian(world, resident, Math.min(deltaSeconds, allowedDurations.get(resident.id) ?? deltaSeconds))
     }
   }
 

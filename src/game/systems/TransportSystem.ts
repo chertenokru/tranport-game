@@ -14,7 +14,7 @@ import { PedestrianCrossingSystem } from './crossings/PedestrianCrossingSystem'
 export class TransportSystem implements GameSystem {
   private readonly traffic: BusTrafficSystem
   private readonly crossings = new PedestrianCrossingSystem()
-  private readonly collisions = new PedestrianCollisionSystem()
+  private readonly collisions: PedestrianCollisionSystem
   private readonly passengers = new PassengerSystem()
   private readonly pedestrians = new PedestrianMovementSystem()
   private readonly buses = new BusMovementSystem((world, bus) =>
@@ -23,6 +23,7 @@ export class TransportSystem implements GameSystem {
 
   constructor(trafficConfig: TrafficConfig = TRAFFIC_CONFIG) {
     this.traffic = new BusTrafficSystem(trafficConfig)
+    this.collisions = new PedestrianCollisionSystem(trafficConfig.minimumGap)
   }
 
   update(world: GameWorld, deltaSeconds: number): void {
@@ -40,8 +41,8 @@ export class TransportSystem implements GameSystem {
 
       const traffic = this.traffic.plan(world, this.nextStep(world, remaining))
       const step = traffic.duration
-      this.collisions.resolveStep(world, step, traffic.motions)
-      this.pedestrians.update(world, step)
+      const pedestrianDurations = this.collisions.resolveStep(world, step, traffic.motions)
+      this.pedestrians.update(world, step, pedestrianDurations)
       this.buses.update(world, step, traffic.motions)
       this.traffic.releaseExitedZones(world)
       this.crossings.update(world)
