@@ -4,16 +4,16 @@ import { ResidentState } from '@/game/domain/Resident'
 import { CollisionShape, type CollisionBody } from '@/game/tools/collision/CollisionBody'
 import { findCollisionTime } from '@/game/tools/collision/findCollisionTime'
 import { getVehicleBounds } from '@/game/tools/getVehicleBounds'
-import { getBusMotion } from '../tools/movement/getBusMotion'
+import { getBusMotion, type BusMotions } from '../tools/movement/getBusMotion'
 import { getPathMotion } from '../tools/movement/getPathMotion'
 import { isResidentWalking } from '../tools/movement/isResidentWalking'
 
 export class PedestrianCollisionSystem {
   // Called before movement, for an interval with no turns or state transitions.
   // Death is applied first so a victim cannot move farther or board at the end of the step.
-  resolveStep(world: GameWorld, duration: number): void {
+  resolveStep(world: GameWorld, duration: number, motions?: BusMotions): void {
     const vehicles = [...world.buses.values()].map((bus) => {
-      const motion = getBusMotion(world, bus)
+      const motion = motions?.get(bus.id) ?? getBusMotion(world, bus)
       const body: CollisionBody = {
         shape: CollisionShape.Rectangle,
         ...getVehicleBounds({ ...bus, direction: motion.direction }),

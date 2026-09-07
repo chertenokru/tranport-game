@@ -337,8 +337,9 @@ export function createIShapedWorld(): GameWorld {
   for (const route of routes) {
     world.routes.set(route.id, route)
     const bus = createBus(route, 'bus-' + route.id, vehicle)
-
     world.buses.set(bus.id, bus)
+    const bus1 = createBus(route, 'bus1-' + route.id, { ...vehicle, stopWaitSeconds: 2 })
+    world.buses.set(bus1.id, bus1)
   }
 
   return world

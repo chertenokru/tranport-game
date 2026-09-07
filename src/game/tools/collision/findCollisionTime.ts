@@ -1,5 +1,6 @@
 import type { Vector2 } from '@/game/domain/geometry'
 import { type CollisionBody, CollisionShape } from './CollisionBody'
+import { getRayBoxInterval } from './getRayBoxInterval'
 
 // Returns the first contact in [0, maximumTime]. Both bodies move linearly.
 // The caller splits a path at waypoints, where velocity or orientation changes.
@@ -60,20 +61,10 @@ function hitBox(
   halfSize: Vector2,
   maximumTime: number,
 ): number | null {
-  let enter = 0
-  let leave = maximumTime
-  for (const axis of ['x', 'y'] as const) {
-    if (velocity[axis] === 0) {
-      if (Math.abs(position[axis]) > halfSize[axis]) return null
-      continue
-    }
-    const first = (-halfSize[axis] - position[axis]) / velocity[axis]
-    const second = (halfSize[axis] - position[axis]) / velocity[axis]
-    enter = Math.max(enter, Math.min(first, second))
-    leave = Math.min(leave, Math.max(first, second))
-    if (enter > leave) return null
-  }
-  return enter
+  const interval = getRayBoxInterval(position, velocity, halfSize)
+  if (!interval) return null
+  const contact = Math.max(0, interval.enter)
+  return contact <= Math.min(maximumTime, interval.exit) ? contact : null
 }
 
 function hitCircle(

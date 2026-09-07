@@ -2,6 +2,10 @@ import type { GameWorld } from '@/game/core/GameWorld'
 import { type Bus, BusState } from '@/game/domain/Bus'
 import { getDirection } from '@/game/tools/geometry'
 import { getPathMotion } from './getPathMotion'
+import type { BusId } from '@/game/domain/ids'
+
+export type BusMotion = ReturnType<typeof getBusMotion>
+export type BusMotions = ReadonlyMap<BusId, BusMotion>
 
 export function getBusMotion(world: GameWorld, bus: Bus) {
   const leg = world.routes.get(bus.routeId)?.legs[bus.legIndex]

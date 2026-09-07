@@ -1,7 +1,15 @@
 import { GAME_CONFIG } from '@/game/config/game.config'
 import type { BusStop } from '@/game/domain/BusStop.ts'
 import type { Building } from '@/game/domain/Building.ts'
-import type { BuildingId, BusId, BusStopId, IntersectionId, ResidentId, RoadId, RouteId } from '@/game/domain/ids.ts'
+import type {
+  BuildingId,
+  BusId,
+  BusStopId,
+  IntersectionId,
+  ResidentId,
+  RoadId,
+  RouteId,
+} from '@/game/domain/ids.ts'
 import type { Road } from '@/game/domain/Road.ts'
 import type { MapEdge, MapEdgeId } from '@/game/world/MapEdge.ts'
 import type { MapNode, MapNodeId } from '@/game/world/MapNode.ts'
@@ -21,6 +29,7 @@ export class GameWorld {
   readonly roadNodes = new Map<MapNodeId, MapNode>()
   readonly roadEdges = new Map<MapEdgeId, MapEdge>()
   readonly intersections = new Map<IntersectionId, Intersection>()
+  readonly trafficZoneOwners = new Map<string, BusId>()
   readonly routes = new Map<RouteId, BusRoute>()
   readonly buses = new Map<BusId, Bus>()
   readonly residents = new Map<ResidentId, Resident>()
@@ -31,6 +40,7 @@ export class GameWorld {
     this.deliveredPassengers = 0
     this.accidents = 0
     this.buses.clear()
+    this.trafficZoneOwners.clear()
     this.residents.clear()
     this.population.secondsUntilNextCycle = 0
     this.population.nextResidentId = 1
