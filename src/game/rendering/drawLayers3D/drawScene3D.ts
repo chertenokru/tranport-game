@@ -88,7 +88,7 @@ export function drawScene3D(
   for (const group of visibleGroups) {
     const resident = group[0]!
     renderables.push({
-      depth: camera.depth(resident.position),
+      depth: camera.depth(resident.position) + 20,
       draw: () => drawResident(context, camera, resident, group.length),
     })
   }
