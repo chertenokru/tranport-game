@@ -1,27 +1,33 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 
-import {
-  createIsometricRenderer,
-  type IsometricGameRenderer,
-} from '@/game/rendering/createIsometricRenderer'
+import { createIsometricRenderer, type IsometricGameRenderer } from '@/game/rendering/createIsometricRenderer'
+import { type CanvasGameRenderer, createCanvasRenderer } from '@/game/rendering/createCanvasRenderer'
 import { useGameSessionContext } from '@/features/game-session/composables/useGameSessionContext'
+
+type RenderMode = 'canvas' | 'isometric'
 
 const gameSession = useGameSessionContext()
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 
-let renderer: IsometricGameRenderer | null = null
+const renderMode = ref<RenderMode>('isometric')
+
+let renderer: CanvasGameRenderer | IsometricGameRenderer | null = null
+
+function getIsometricRenderer(): IsometricGameRenderer | null {
+  return renderer && 'rotateBy' in renderer ? renderer : null
+}
 
 function rotate(direction: -1 | 1): void {
-  renderer?.rotateBy(direction * (Math.PI / 2))
+  getIsometricRenderer()?.rotateBy(direction * (Math.PI / 2))
 }
 
 function zoom(factor: number): void {
-  renderer?.zoomBy(factor)
+  getIsometricRenderer()?.zoomBy(factor)
 }
 
 function resetView(): void {
-  renderer?.resetView()
+  getIsometricRenderer()?.resetView()
 }
 
 onMounted(() => {
@@ -42,6 +48,25 @@ onUnmounted(() => {
   renderer.dispose()
   renderer = null
 })
+
+function switchRenderer(mode: RenderMode): void {
+  if (!canvas.value || mode === renderMode.value) {
+    return
+  }
+
+  if (renderer) {
+    gameSession.detachRenderer(renderer)
+    renderer.dispose()
+  }
+
+  renderer =
+    mode === 'isometric'
+      ? createIsometricRenderer(canvas.value)
+      : createCanvasRenderer(canvas.value)
+
+  renderMode.value = mode
+  gameSession.attachRenderer(renderer)
+}
 </script>
 
 <template>
@@ -54,8 +79,25 @@ onUnmounted(() => {
       tabindex="0"
       width="1120"
     />
+    <div aria-label="Режим отображения" class="renderer-switch">
+      <button
+        :aria-pressed="renderMode === 'canvas'"
+        :class="{ active: renderMode === 'canvas' }"
+        @click="switchRenderer('canvas')"
+      >
+        2D
+      </button>
 
-    <div class="camera-controls" aria-label="Управление камерой">
+      <button
+        :aria-pressed="renderMode === 'isometric'"
+        :class="{ active: renderMode === 'isometric' }"
+        @click="switchRenderer('isometric')"
+      >
+        3D
+      </button>
+    </div>
+
+    <div v-if="renderMode === 'isometric'" aria-label="Управление камерой" class="camera-controls">
       <button aria-label="Повернуть влево" title="Повернуть влево" @click="rotate(-1)">↶</button>
       <button aria-label="Уменьшить масштаб" title="Уменьшить масштаб" @click="zoom(1 / 1.15)">
         −
@@ -67,7 +109,9 @@ onUnmounted(() => {
       <button aria-label="Повернуть вправо" title="Повернуть вправо" @click="rotate(1)">↷</button>
     </div>
 
-    <span class="camera-hint">Перетащите для плавного поворота · Колесо для масштаба</span>
+    <span v-if="renderMode === 'isometric'" class="camera-hint"
+      >Перетащите для плавного поворота · Колесо для масштаба</span
+    >
   </div>
 </template>
 
@@ -98,10 +142,6 @@ onUnmounted(() => {
 .game-canvas:focus-visible {
   outline: 3px solid #1ba7b5;
   outline-offset: 3px;
-}
-
-.game-canvas--dragging {
-  cursor: grabbing;
 }
 
 .camera-controls {
@@ -169,5 +209,38 @@ onUnmounted(() => {
     scale: 0.9;
     transform-origin: top right;
   }
+}
+
+.renderer-switch {
+  display: flex;
+  position: absolute;
+  top: clamp(1rem, 3vw, 2.2rem);
+  left: clamp(1rem, 3vw, 2.2rem);
+  z-index: 2;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  background: rgb(247 250 247 / 0.9);
+  border: 1px solid rgb(67 89 89 / 0.22);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.65rem 1.5rem rgb(24 52 50 / 0.16);
+  backdrop-filter: blur(8px);
+}
+
+.renderer-switch button {
+  min-width: 2.8rem;
+  height: 2.15rem;
+  padding: 0 0.65rem;
+  color: #17353a;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  border-radius: 0.48rem;
+  cursor: pointer;
+}
+
+.renderer-switch button:hover,
+.renderer-switch button.active {
+  color: white;
+  background: #1595a1;
 }
 </style>
