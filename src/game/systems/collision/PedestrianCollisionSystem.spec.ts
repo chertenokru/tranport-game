@@ -60,7 +60,16 @@ describe('pedestrian collisions during transport', () => {
     const route = world.routes.get(bus.routeId)!
     world.routes.set(route.id, {
       ...route,
-      legs: [{ ...route.legs[0]!, path: [{ x: 700, y: 340 }, { x: 800, y: 340 }] }, ...route.legs.slice(1)],
+      legs: [
+        {
+          ...route.legs[0]!,
+          path: [
+            { x: 700, y: 340 },
+            { x: 800, y: 340 },
+          ],
+        },
+        ...route.legs.slice(1),
+      ],
     })
     bus.position = { x: 700, y: 340 }
     bus.pathIndex = 1

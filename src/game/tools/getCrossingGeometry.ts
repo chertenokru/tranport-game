@@ -4,7 +4,8 @@ import { CROSSINGS_CONFIG } from '@/game/config/crossings.config'
 import { localToWorld } from './geometry'
 
 export function getCrossingGeometry(crossing: PedestrianCrossing) {
-  const verticalRoad = crossing.direction === Direction.North || crossing.direction === Direction.South
+  const verticalRoad =
+    crossing.direction === Direction.North || crossing.direction === Direction.South
   const offset = crossing.roadWidth / 2 + CROSSINGS_CONFIG.sidewalkOffset
   return {
     halfSize: {

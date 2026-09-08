@@ -1,5 +1,9 @@
 import type { Resident } from '@/game/domain/Resident'
-import { type TransportDecision, TransportDecisionReason, TransportMode } from '@/game/domain/TransportDecision'
+import {
+  type TransportDecision,
+  TransportDecisionReason,
+  TransportMode,
+} from '@/game/domain/TransportDecision'
 import type { CanvasFrame } from '../CanvasLayer'
 
 export function drawDecisionIndicator(

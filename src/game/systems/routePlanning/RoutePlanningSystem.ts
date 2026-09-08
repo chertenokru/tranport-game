@@ -7,7 +7,10 @@ import { TransportDecisionReason, TransportMode } from '@/game/domain/TransportD
 import { chooseTransport } from './tools/chooseTransport.ts'
 import { findBestBusOption } from './tools/findBestBusOption.ts'
 import { getBuildingEntrance } from '@/game/tools/getBuildingEntrance.ts'
-import { buildPedestrianPath, pedestrianPathDistance } from '@/game/tools/routing/buildPedestrianPath'
+import {
+  buildPedestrianPath,
+  pedestrianPathDistance,
+} from '@/game/tools/routing/buildPedestrianPath'
 
 interface TransitOption {
   readonly transit: TransitJourney
@@ -35,10 +38,20 @@ export class RoutePlanningSystem implements GameSystem {
     const destinationPosition = getBuildingEntrance(destination)
     const walkingPath = buildPedestrianPath(world, resident.position, destinationPosition)
     const walkingDistance = pedestrianPathDistance(walkingPath)
-    const pathsToStops = new Map([...world.stops.values()].map((stop) =>
-      [stop.id, buildPedestrianPath(world, resident.position, stop.waitingPosition)]))
-    const distancesFromStops = new Map([...world.stops.values()].map((stop) =>
-      [stop.id, pedestrianPathDistance(buildPedestrianPath(world, stop.waitingPosition, destinationPosition))]))
+    const pathsToStops = new Map(
+      [...world.stops.values()].map((stop) => [
+        stop.id,
+        buildPedestrianPath(world, resident.position, stop.waitingPosition),
+      ]),
+    )
+    const distancesFromStops = new Map(
+      [...world.stops.values()].map((stop) => [
+        stop.id,
+        pedestrianPathDistance(
+          buildPedestrianPath(world, stop.waitingPosition, destinationPosition),
+        ),
+      ]),
+    )
     const walkingTime = walkingDistance / resident.walkingSpeed
     const buses = [...world.buses.values()]
     let bestOption: TransitOption | null = null

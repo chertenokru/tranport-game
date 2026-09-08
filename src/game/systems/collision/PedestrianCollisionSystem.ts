@@ -14,7 +14,11 @@ export class PedestrianCollisionSystem {
 
   // Called before movement, for an interval with no turns or state transitions.
   // Death is applied first so a victim cannot move farther or board at the end of the step.
-  resolveStep(world: GameWorld, duration: number, motions?: BusMotions): ReadonlyMap<ResidentId, number> {
+  resolveStep(
+    world: GameWorld,
+    duration: number,
+    motions?: BusMotions,
+  ): ReadonlyMap<ResidentId, number> {
     const allowedDurations = new Map<ResidentId, number>()
     const vehicles = [...world.buses.values()].map((bus) => {
       const motion = motions?.get(bus.id) ?? getBusMotion(world, bus)

@@ -6,17 +6,15 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-    server: {
-        port: 5173,
-        strictPort: true,
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  plugins: [vue(), vueDevTools()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    plugins: [vue(), vueDevTools()],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url)),
-        },
-    },
-    base: process.env.GITHUB_ACTIONS
-        ? '/tranport-game/'
-        : '/',
+  },
+  base: process.env.GITHUB_ACTIONS ? '/tranport-game/' : '/',
 })

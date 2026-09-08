@@ -23,22 +23,32 @@ const emit = defineEmits<{
 
 <style scoped>
 .app-button {
-  padding: 0.75rem 1.25rem;
-  color: white;
+  min-height: 2.65rem;
+  padding: 0.68rem 1.2rem;
+  color: #f7faf7;
   font: inherit;
-  font-weight: 600;
-  background: #2563eb;
-  border: 0;
-  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 750;
+  letter-spacing: 0.045em;
+  background: linear-gradient(145deg, #1ca8b5, #08727d);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.4rem 1.1rem rgb(8 114 125 / 0.18);
   cursor: pointer;
+  transition:
+    translate 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
 }
 
 .app-button:hover:not(:disabled) {
-  background: #1d4ed8;
+  translate: 0 -1px;
+  filter: brightness(1.06);
+  box-shadow: 0 0.55rem 1.35rem rgb(8 114 125 / 0.26);
 }
 
 .app-button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.48;
 }
 </style>

@@ -16,7 +16,8 @@ export function drawPedestrianCrossing(
     context.translate(position.x, position.y)
     context.rotate(getDirectionAngle(direction))
 
-    context.strokeStyle = getPedestrianSignal(pedestrianCrossing, elapsedSeconds)?.color ?? '#f8fafc'
+    context.strokeStyle =
+      getPedestrianSignal(pedestrianCrossing, elapsedSeconds)?.color ?? '#f8fafc'
     context.lineWidth = 2
     context.lineCap = 'butt'
     context.setLineDash([])

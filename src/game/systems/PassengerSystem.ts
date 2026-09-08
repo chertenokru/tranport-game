@@ -69,7 +69,11 @@ export class PassengerSystem implements GameSystem {
       resident.position = {
         ...stop.waitingPosition,
       }
-      resident.path = buildPedestrianPath(world, stop.waitingPosition, getBuildingEntrance(destination))
+      resident.path = buildPedestrianPath(
+        world,
+        stop.waitingPosition,
+        getBuildingEntrance(destination),
+      )
       resident.pathIndex = 1
       resident.state = ResidentState.WalkingFromStop
     }

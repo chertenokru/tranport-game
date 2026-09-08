@@ -57,6 +57,6 @@ onUnmounted(() => {
   display: grid;
   min-height: 100vh;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  background: #eef2f7;
+  background: #c8d2d0;
 }
 </style>

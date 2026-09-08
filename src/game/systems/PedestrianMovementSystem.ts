@@ -17,13 +17,21 @@ export class PedestrianMovementSystem implements GameSystem {
         continue
       }
 
-      this.movePedestrian(world, resident, Math.min(deltaSeconds, allowedDurations.get(resident.id) ?? deltaSeconds))
+      this.movePedestrian(
+        world,
+        resident,
+        Math.min(deltaSeconds, allowedDurations.get(resident.id) ?? deltaSeconds),
+      )
     }
   }
 
   private movePedestrian(world: GameWorld, resident: Resident, deltaSeconds: number): void {
-    const blockedIndex = resident.path.findIndex((point, index) => index >= resident.pathIndex &&
-      point.crossingId !== undefined && !world.crossingOccupants.get(point.crossingId)?.has(resident.id))
+    const blockedIndex = resident.path.findIndex(
+      (point, index) =>
+        index >= resident.pathIndex &&
+        point.crossingId !== undefined &&
+        !world.crossingOccupants.get(point.crossingId)?.has(resident.id),
+    )
     const movement = moveAlongPath({
       position: resident.position,
       path: blockedIndex < 0 ? resident.path : resident.path.slice(0, blockedIndex),

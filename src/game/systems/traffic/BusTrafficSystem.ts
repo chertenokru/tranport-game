@@ -101,7 +101,10 @@ export class BusTrafficSystem {
     return { motions, duration }
   }
 
-  releaseExitedZones(world: GameWorld, zones: readonly TrafficZone[] = getTrafficZones(world)): void {
+  releaseExitedZones(
+    world: GameWorld,
+    zones: readonly TrafficZone[] = getTrafficZones(world),
+  ): void {
     for (const [id, busId] of world.trafficZoneOwners) {
       const zone = zones.find((zone) => zone.id === id)
       const bus = world.buses.get(busId)
@@ -110,10 +113,13 @@ export class BusTrafficSystem {
         continue
       }
       const { direction } = getBusMotion(world, bus)
-      const interval = zoneInterval({
-        bounds: getVehicleBounds({ ...bus, direction }),
-        unit: rotatePoint({ x: 0, y: 1 }, direction),
-      }, zone)
+      const interval = zoneInterval(
+        {
+          bounds: getVehicleBounds({ ...bus, direction }),
+          unit: rotatePoint({ x: 0, y: 1 }, direction),
+        },
+        zone,
+      )
       if (!interval || interval.exit <= EPSILON) world.trafficZoneOwners.delete(id)
     }
   }

@@ -1,8 +1,5 @@
 import { CROSSINGS_CONFIG } from '@/game/config/crossings.config'
-import {
-  type PedestrianCrossing,
-  PedestrianSignalColor,
-} from '@/game/domain/PedestrianCrossing'
+import { type PedestrianCrossing, PedestrianSignalColor } from '@/game/domain/PedestrianCrossing'
 
 export interface PedestrianSignalState {
   readonly color: PedestrianSignalColor

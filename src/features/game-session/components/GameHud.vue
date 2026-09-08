@@ -69,7 +69,9 @@ const pauseButtonLabel = computed(() =>
 <style scoped>
 .game-hud {
   display: grid;
-  min-height: 3.5rem;
+  position: relative;
+  z-index: 2;
+  min-height: 4.2rem;
   grid-template-columns:
     max-content
     minmax(20rem, 1fr)
@@ -77,10 +79,19 @@ const pauseButtonLabel = computed(() =>
     8.5rem
     8.5rem;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0 1rem;
-  color: white;
-  background: #172033;
+  gap: 1.2rem;
+  padding: 0.55rem 1.1rem;
+  color: #d8e6e4;
+  background: linear-gradient(90deg, rgb(27 167 181 / 0.12), transparent 34%), #14272c;
+  border-bottom: 1px solid rgb(80 175 179 / 0.28);
+  box-shadow: 0 0.4rem 1.4rem rgb(10 31 34 / 0.2);
+}
+
+.game-hud > strong {
+  color: #f7faf7;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .game-hud__stats {
   display: grid;
@@ -99,6 +110,10 @@ const pauseButtonLabel = computed(() =>
   display: flex;
   justify-content: center;
   gap: 0.35rem;
+  padding: 0.42rem 0.55rem;
+  background: rgb(255 255 255 / 0.055);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0.55rem;
 }
 
 .game-hud__stats dt {
@@ -112,6 +127,8 @@ const pauseButtonLabel = computed(() =>
 
 .game-hud__stats dd {
   margin: 0;
+  color: #f3f8f6;
+  font-size: 0.84rem;
   font-variant-numeric: tabular-nums;
 }
 .game-hud__pause-button,
@@ -120,5 +137,26 @@ const pauseButtonLabel = computed(() =>
 }
 .game-hud__status {
   white-space: nowrap;
+}
+
+.game-hud__time,
+.game-hud__status {
+  color: #bed0ce;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1050px) {
+  .game-hud {
+    grid-template-columns: max-content 1fr max-content;
+  }
+
+  .game-hud__stats {
+    max-width: none;
+  }
+
+  .game-hud__time,
+  .game-hud__status {
+    display: none;
+  }
 }
 </style>
