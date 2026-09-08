@@ -28,7 +28,7 @@ export function createIsometricRenderer(canvas: HTMLCanvasElement): IsometricGam
     redraw()
   }
   const zoomBy = (factor: number) => {
-    view.zoom = Math.min(1.75, Math.max(0.62, view.zoom * factor))
+    view.zoom = Math.min(3.0, Math.max(0.62, view.zoom * factor))
     redraw()
   }
   const resetView = () => {

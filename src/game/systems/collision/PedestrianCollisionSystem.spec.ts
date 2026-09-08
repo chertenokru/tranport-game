@@ -45,7 +45,7 @@ describe('pedestrian collisions during transport', () => {
     resident.pathIndex = 0
     new TransportSystem().update(world, 1)
     expect(resident.state).toBe(ResidentState.WalkingFromStop)
-    expect(resident.position.y).toBeCloseTo(379)
+    expect(resident.position.y).toBeCloseTo(376)
     expect(world.accidents).toBe(0)
     expect(bus.position).toEqual({ x: 700, y: 340 })
     expect(bus.waitingSecondsRemaining).toBe(1)

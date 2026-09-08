@@ -1,8 +1,8 @@
 import type { GameWorld } from '@/game/core/GameWorld'
 import { ResidentState } from '@/game/domain/Resident'
 import type { CanvasFrame } from '../CanvasLayer'
-import { IsometricCamera } from '../isometric/IsometricCamera'
 import type { IsometricView } from '../isometric/IsometricCamera'
+import { IsometricCamera } from '../isometric/IsometricCamera'
 import { DecisionIndicators } from '../tools/DecisionIndicators'
 import { groupVisibleResidents } from '../tools/groupVisibleResidents'
 import { localToWorld } from '@/game/tools/geometry'
@@ -88,7 +88,7 @@ export function drawScene3D(
   for (const group of visibleGroups) {
     const resident = group[0]!
     renderables.push({
-      depth: camera.depth(resident.position) + 30,
+      depth: camera.depth(resident.position),
       draw: () => drawResident(context, camera, resident, group.length),
     })
   }
@@ -96,7 +96,7 @@ export function drawScene3D(
   for (const resident of residents) {
     if (resident.state !== ResidentState.Dead) continue
     renderables.push({
-      depth: camera.depth(resident.position) + 30,
+      depth: camera.depth(resident.position),
       draw: () => drawDeadResident(context, camera, resident),
     })
   }

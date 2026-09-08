@@ -40,15 +40,21 @@ export function drawRoad(context: Context, camera: IsometricCamera, road: Readon
       2.05,
     )
   }
-  for (let offset = -road.length / 2 + 18; offset < road.length / 2 - 8; offset += 35) {
-    const start = localToWorld({ x: 0, y: offset }, road.position, road.direction)
-    const end = localToWorld(
-      { x: 0, y: Math.min(offset + 17, road.length / 2) },
-      road.position,
-      road.direction,
-    )
-    drawWorldLine(context, camera, start, end, COLORS.lane, 1.7, 3)
-  }
+  // for (let offset = -road.length / 2 + 18; offset < road.length / 2 - 8; offset += 35) {
+  //   const start = localToWorld({ x: 0, y: offset }, road.position, road.direction)
+  //   const end = localToWorld(
+  //     { x: 0, y: Math.min(offset + 17, road.length / 2) },
+  //     road.position,
+  //     road.direction,
+  //   )
+  //   drawWorldLine(context, camera, start, end, COLORS.lane, 1.7, 3)
+  // }
+
+  const laneStart = localToWorld({ x: 0, y: -road.length / 2 }, road.position, road.direction)
+
+  const laneEnd = localToWorld({ x: 0, y: road.length / 2 }, road.position, road.direction)
+
+  drawWorldLine(context, camera, laneStart, laneEnd, COLORS.lane, 1.7, 3)
 
   for (const side of [-1, 1]) {
     const start = localToWorld(

@@ -20,7 +20,7 @@ export const VEHICLES_CONFIG = {
     stopWaitSeconds: 1,
     size: {
       x: 44,
-      y: 24,
+      y: 18,
     },
   },
 } as const satisfies Record<string, VehicleTypeConfig>
